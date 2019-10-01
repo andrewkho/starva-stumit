@@ -1,0 +1,13 @@
+version: "3.6"
+services:
+  letsplayfootsy-server:
+    build: .
+    ports:
+      - "8000:8000"
+    # entrypoint: "cat /run/secrets/my_secret"
+    secrets:
+      - my_secret
+
+secrets:
+  my_secret:
+    file: ./secrets.yml
