@@ -1,7 +1,7 @@
 version: "3.6"
 services:
   letsplayfootsy-server:
-    build: .
+    build: ./server/
     ports:
       - "8000:8000"
     # entrypoint: "cat /run/secrets/my_secret"

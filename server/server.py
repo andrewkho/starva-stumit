@@ -8,7 +8,7 @@ app = Sanic()
 
 @app.route("/")
 async def test(request):
-    return json({"hello": "world"})
+    return json({"hello": "andrew"})
 
 
 @app.route("/strava_auth_url")
