@@ -1,6 +1,8 @@
 from sanic import Sanic
 from sanic.response import json
 
+import strava
+
 app = Sanic()
 
 
@@ -8,6 +10,12 @@ app = Sanic()
 async def test(request):
     return json({"hello": "world"})
 
+
+@app.route("/strava_auth_url")
+async def strava_auth_url(request):
+    return json({
+        "auth_url": await strava.get_identity_url(),
+    })
 
 # Route for callback from strava when new activity
 
