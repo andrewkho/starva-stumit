@@ -1,8 +1,15 @@
 # letsplayfootsy
 
+## How to dev locally
+```bash
+docker-compose -f docker-compose.dev.yml up --build
+```
+Site should be live at `http://localhost`
+
 ## How to store secrets
 
 - `server/secrets.yml` (gitignored, don't ever commit this!)
+- `server/secrets_key.bin` (gitignored, don't ever commit this!)
 ```
 strava_client_id: https://www.strava.com/settings/api
 strava_client_secret: https://www.strava.com/settings/api
