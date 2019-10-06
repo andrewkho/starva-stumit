@@ -1,5 +1,7 @@
 import axios from "axios";
 import React, { Component } from 'react';
+import {Row, Col, Grid} from "react-bootstrap";
+import Button from "react-bootstrap/lib/Button";
 
 import DateRangePicker from 'react-bootstrap-daterangepicker';
 // you will need the css that comes with bootstrap@3. if you are using
@@ -7,10 +9,8 @@ import DateRangePicker from 'react-bootstrap-daterangepicker';
 import 'bootstrap/dist/css/bootstrap.css';
 // you will also need the css that comes with bootstrap-daterangepicker
 import 'bootstrap-daterangepicker/daterangepicker.css';
-import Grid from "react-bootstrap/lib/Grid";
-import Row from "react-bootstrap/lib/Row";
-import Button from "react-bootstrap/lib/Button";
-import Col from "react-bootstrap/lib/Col";
+
+import ActivitySummaryButton from "components/Strava/Activities/ActivitySummaryButton";
 
 const host = "http://localhost";
 const get_activities_route = "/api/v1/get_activities";
@@ -105,31 +105,34 @@ class StravaActivitiesPage extends Component {
 
   render() {
     return (
-      <div>
-        <Grid fluid>
-          <Row>
-            <Col>
-            </Col>
-            <Col>
-              <DateRangePicker
-                weekStart={1}
-                startDate={this.state.start}
-                endDate={this.state.end}
-                onEvent={this.handleDateChange}
-              >
-                <Button>
-                  {this.state.start.toLocaleDateString()} -
-                  {this.state.end.toLocaleDateString()}</Button>
-              </DateRangePicker>
-            </Col>
-          </Row>
-          <Row>
-            <Col>
-              Activities {JSON.stringify(this.state.activities)}
-            </Col>
-          </Row>
-        </Grid>
-      </div>
+      <Grid fluid>
+        <Row>
+          Select Week
+          <DateRangePicker
+            weekStart={1}
+            startDate={this.state.start}
+            endDate={this.state.end}
+            onEvent={this.handleDateChange}
+          >
+            <Button>
+              {this.state.start.toLocaleDateString()} -
+              {this.state.end.toLocaleDateString()}
+            </Button>
+          </DateRangePicker>
+        </Row>
+      <Row>
+        Activities List
+      </Row>
+        {
+          this.state.activities.map((activity) => {
+            return (
+              <Row>
+                <ActivitySummaryButton activity={activity} metric={true}/>
+              </Row>
+            )
+          })
+        }
+      </Grid>
     )
   }
 }
