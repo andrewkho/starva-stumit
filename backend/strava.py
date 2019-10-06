@@ -6,7 +6,9 @@ from typing import Dict, List
 import stravalib
 from stravalib.model import Activity, Athlete
 
+import db_utils.strava_athlete_tokens
 import secrets
+from user import User
 
 MY_ATHLETE_ID = '42081150'
 
@@ -21,7 +23,8 @@ REQUIRED_SCOPES = [
     'activity:read_all',
 ]
 
-REDIRECT_URI = 'http://localhost:3000/admin/strava/authreturn/'
+HOST = 'http://localhost'
+REDIRECT_ROUTE = '/admin/strava/authreturn/'
 
 
 class StravaToken(object):
@@ -47,7 +50,7 @@ class StravaToken(object):
         self.expires_dt = datetime.datetime.fromtimestamp(self.expires_at)
 
     async def get_new_tokens(self):
-        new_token = await refresh_token(self)
+        new_token = await refresh_access_token(self)
 
         self.athlete_id = new_token.athlete_id
         self.access_token = new_token.access_token
@@ -74,7 +77,7 @@ async def get_identity_url() -> str:
     client = stravalib.client.Client()
     return client.authorization_url(
         client_id=secrets.strava_client_id,
-        redirect_uri=REDIRECT_URI,
+        redirect_uri=HOST + REDIRECT_ROUTE,
         approval_prompt='auto',
         scope=REQUIRED_SCOPES,  # This actually requires List[str]
         state='',
@@ -88,7 +91,9 @@ async def get_athlete_id(access_token: str) -> str:
     return athlete.id
 
 
-async def get_activities(token: StravaToken) -> List[Activity]:
+async def get_activities(user: User) -> List[Activity]:
+    token = await db_utils.strava_athlete_tokens.get_athlete_token_info(
+        athlete_id=user.athlete_id)
     client = stravalib.client.Client(
         access_token=await token.get_valid_access_token())
 
@@ -101,19 +106,25 @@ async def exchange_code_for_token(code: str) -> StravaToken:
     logger.info(f"Server received code: {code}")
     client = stravalib.client.Client()
 
-    tokens = client.exchange_code_for_token(
-        client_id=secrets.strava_client_id,
-        client_secret=secrets.strava_client_secret,
-        code=code,
-    )
+    try:
+        tokens = client.exchange_code_for_token(
+            client_id=secrets.strava_client_id,
+            client_secret=secrets.strava_client_secret,
+            code=code,
+        )
+    except Exception:
+        raise ValueError("Failed to exchange backend for code")
 
-    athlete_id = await get_athlete_id(tokens['access_token'])
+    try:
+        athlete_id = await get_athlete_id(tokens['access_token'])
+    except Exception:
+        raise ValueError("Failed to get athlete_id with access token")
 
     return StravaToken.from_dict(athlete_id=athlete_id,
                                  token_dict=tokens)
 
 
-async def refresh_token(strava_token: StravaToken) -> StravaToken:
+async def refresh_access_token(strava_token: StravaToken) -> StravaToken:
     client = stravalib.client.Client()
     new_tokens = client.refresh_access_token(
         client_id=secrets.strava_client_id,

@@ -23,6 +23,8 @@ strava_client_secret = SECRETS['strava_client_secret']
 aws_access_key = SECRETS['aws_access_key']
 aws_secret_access_key = SECRETS['aws_secret_access_key']
 
+jwt_secret = SECRETS['jwt_secret']
+
 _encoding = 'UTF-8'
 
 

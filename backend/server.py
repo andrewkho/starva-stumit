@@ -3,13 +3,29 @@ import sys
 
 from sanic import Sanic
 from sanic.response import json
-from sanic_cors import CORS
+from sanic_jwt import Initialize, inject_user, protected
 
-import db_utils
+import auth
+import secrets
 import strava
 
 app = Sanic()
-CORS(app)
+Initialize(
+    app,
+    url_prefix='/api/auth',
+    secret=secrets.jwt_secret,
+    # cookie_httponly=False,  # This shouldn't be on
+    cookie_httponly=True,
+    cookie_set=True,
+    cookie_domain='.app.localhost',
+    cookie_access_token_name='letsplayfootsy-jwt',
+    expiration_delta=60 * 24 * 10000,  # 10000 days
+    authenticate=auth.authenticate,
+    retrieve_user=auth.retrieve_user,
+    # refresh_token_enabled=True,
+    # store_refresh_token=auth.store_refresh_token,
+    # retrieve_refresh_token=auth.retrieve_refresh_token,
+)
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler(sys.stdout))
@@ -28,20 +44,11 @@ async def strava_auth_url(request):
     })
 
 
-@app.route("api/v1/submit_code", methods=['POST'])
-async def submit_code(request):
-    token = await strava.exchange_code_for_token(request.json['code'])
-    await db_utils.put_athlete_token_info(strava_token=token)
-
-    return json({
-        "code_received": request.json['code'],
-    })
-
 @app.route("api/v1/get_activities", methods=['POST'])
-async def get_activities(request):
-    token = await db_utils.get_athlete_token_info(
-        athlete_id=strava.MY_ATHLETE_ID)
-    activities = await strava.get_activities(token=token)
+@inject_user()
+@protected()
+async def get_activities(request, user: auth.User):
+    activities = await strava.get_activities(user)
 
     logger.info(f"Got activities: {[a.name for a in activities]}")
 
@@ -54,8 +61,6 @@ async def get_activities(request):
             for a in activities
         ]
     })
-
-# Route for callback from strava when new activity
 
 # Route for fetching data for plotting?
 

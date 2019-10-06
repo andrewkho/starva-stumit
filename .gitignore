@@ -106,3 +106,7 @@ venv.bak/
 # secrets
 secrets.yml
 secrets_key.bin
+
+
+# javascript
+node_modules
