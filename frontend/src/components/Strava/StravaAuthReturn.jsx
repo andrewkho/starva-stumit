@@ -1,10 +1,10 @@
 import axios from "axios";
 import React, {Component} from "react";
+import {Redirect} from "react-router";
 import qs from "query-string";
 
 const host = "http://localhost";
 const authorize_route = "/api/auth";
-
 
 async function authorize(code) {
   return await axios.post(host + authorize_route, {
@@ -74,15 +74,20 @@ class StravaAuthReturn extends Component {
   render() {
     if (this.state.waiting_for_auth) {
       return (
-        <div>
-          Waiting for auth
+        <div className="content">
+          <title>Checking credentials...</title>
         </div>
       );
     } else {
       return (
-        <div>
-          {this.state.authorized ? "Authorized" : "Unauthorized"}
+        <div className="content">
+          {
+            this.state.authorized ?
+              <Redirect to="/admin/strava/"/> :
+              <Redirect to="/admin/strava/auth_failed"/>
+          }
         </div>
+        // window.location.replace(auth_url.auth_url);
       )
     }
   }

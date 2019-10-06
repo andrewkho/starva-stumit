@@ -5,11 +5,16 @@
   "dependencies": {
     "axios": "^0.19.0",
     "bootstrap": "^4.3.1",
+    "bootstrap-daterangepicker": "^3.0.5",
     "chartist": "0.10.1",
+    "jquery": "^3.4.1",
+    "moment": "^2.24.0",
     "node-sass": "4.12.0",
+    "prop-types": "^15.7.2",
     "query-string": "^6.8.3",
     "react": "16.8.6",
     "react-bootstrap": "0.32.4",
+    "react-bootstrap-daterangepicker": "^4.1.0",
     "react-chartist": "0.13.3",
     "react-dom": "16.8.6",
     "react-google-maps": "9.4.5",
@@ -48,3 +53,4 @@
     ]
   }
 }
+

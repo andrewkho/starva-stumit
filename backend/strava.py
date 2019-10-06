@@ -37,6 +37,76 @@ class StravaToken(object):
             expires_at=token_dict['expires_at'],
         )
 
+    @classmethod
+    async def lookup(cls, athlete_id: str) -> 'StravaToken':
+        token_dict = await (
+            db_utils
+                .strava_athlete_tokens
+                .get_athlete_token_info(athlete_id)
+        )
+
+        if token_dict is None:
+            raise ValueError("Athlete not found!")
+
+        return StravaToken.from_dict(athlete_id=athlete_id,
+                                     token_dict=token_dict)
+
+    @classmethod
+    async def exchange_if_necessary(cls,
+                                    token: 'StravaToken') -> 'StravaToken':
+        """
+        Check if this token needs refreshing, if no, simply
+        return token. If yes then refresh, store, and
+        return new refreshed token.
+
+        :param token:
+        :return:
+        """
+        if token.expires_dt <= datetime.datetime.utcnow():
+            logger.info(f"token_expiry {token.expires_dt} is in the past! "
+                        f"utcnow {datetime.datetime.utcnow()}. Refreshing...")
+            new_token = await _refresh_access_token(token)
+            await (
+                db_utils
+                .strava_athlete_tokens
+                .put_athlete_token_info(new_token)
+            )
+            return new_token
+        else:
+            return token
+
+    @classmethod
+    async def create_from_code(cls, code: str) -> 'StravaToken':
+        """
+        Given a code after user authorizes with strava,
+        exchange for tokens, store, and return the token object.
+
+        :param code:
+        :return:
+        """
+        client = stravalib.client.Client()
+
+        try:
+            tokens = client.exchange_code_for_token(
+                client_id=secrets.strava_client_id,
+                client_secret=secrets.strava_client_secret,
+                code=code,
+            )
+        except Exception:
+            raise ValueError("Failed to exchange backend for code")
+
+        try:
+            athlete_id = await get_athlete_id(tokens['access_token'])
+        except Exception:
+            raise ValueError("Failed to get athlete_id with access token")
+
+        token = StravaToken.from_dict(athlete_id=athlete_id,
+                                      token_dict=tokens)
+        await db_utils.strava_athlete_tokens.put_athlete_token_info(token)
+
+        return token
+
+
     def __init__(self,
                  strava_athlete_id: str,
                  access_token: str,
@@ -46,31 +116,7 @@ class StravaToken(object):
         self.access_token = access_token
         self.refresh_token = refresh_token
         self.expires_at = expires_at  # seconds from epoch
-
         self.expires_dt = datetime.datetime.fromtimestamp(self.expires_at)
-
-    async def get_new_tokens(self):
-        new_token = await refresh_access_token(self)
-
-        self.athlete_id = new_token.athlete_id
-        self.access_token = new_token.access_token
-        self.refresh_token = new_token.access_token
-        self.expires_at = new_token.expires_at
-        self.expires_dt = datetime.datetime.fromtimestamp(self.expires_at)
-
-    async def get_valid_access_token(self) -> str:
-        """
-        Returns a valid access token. If current token expired,
-        fetches a new one
-
-        :return: valid access_token
-        """
-        if self.expires_dt <= datetime.datetime.utcnow():
-            logger.info(f"token_expiry {self.expires_dt} is in the past! "
-                        f"utcnow {datetime.datetime.utcnow()}. Refreshing...")
-            await self.get_new_tokens()
-
-        return self.access_token
 
 
 async def get_identity_url() -> str:
@@ -91,40 +137,28 @@ async def get_athlete_id(access_token: str) -> str:
     return athlete.id
 
 
-async def get_activities(user: User) -> List[Activity]:
-    token = await db_utils.strava_athlete_tokens.get_athlete_token_info(
-        athlete_id=user.athlete_id)
-    client = stravalib.client.Client(
-        access_token=await token.get_valid_access_token())
+async def get_activities(user: User, start: int, end: int) -> List[Activity]:
+    """
 
-    activities = [_ for _ in client.get_activities(limit=10)]
+    :param user: User object with athlete_id
+    :param start: start of range in seconds from epoch
+    :param end: end of range in seconds from epoch
+    :return:
+    """
+    token = await StravaToken.lookup(athlete_id=user.athlete_id)
+    token = await StravaToken.exchange_if_necessary(token)
 
+    client = stravalib.client.Client(access_token=token.access_token)
+
+    # strava.get_activities wants ranges in datetimes
+    after = datetime.datetime.fromtimestamp(start)
+    before = datetime.datetime.fromtimestamp(end)
+    activities = [_ for _ in client.get_activities(after=after,
+                                                   before=before)]
     return activities
 
 
-async def exchange_code_for_token(code: str) -> StravaToken:
-    logger.info(f"Server received code: {code}")
-    client = stravalib.client.Client()
-
-    try:
-        tokens = client.exchange_code_for_token(
-            client_id=secrets.strava_client_id,
-            client_secret=secrets.strava_client_secret,
-            code=code,
-        )
-    except Exception:
-        raise ValueError("Failed to exchange backend for code")
-
-    try:
-        athlete_id = await get_athlete_id(tokens['access_token'])
-    except Exception:
-        raise ValueError("Failed to get athlete_id with access token")
-
-    return StravaToken.from_dict(athlete_id=athlete_id,
-                                 token_dict=tokens)
-
-
-async def refresh_access_token(strava_token: StravaToken) -> StravaToken:
+async def _refresh_access_token(strava_token: StravaToken) -> StravaToken:
     client = stravalib.client.Client()
     new_tokens = client.refresh_access_token(
         client_id=secrets.strava_client_id,

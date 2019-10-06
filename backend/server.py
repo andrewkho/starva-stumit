@@ -14,10 +14,9 @@ Initialize(
     app,
     url_prefix='/api/auth',
     secret=secrets.jwt_secret,
-    # cookie_httponly=False,  # This shouldn't be on
     cookie_httponly=True,
     cookie_set=True,
-    cookie_domain='.app.localhost',
+    cookie_domain='localhost',
     cookie_access_token_name='letsplayfootsy-jwt',
     expiration_delta=60 * 24 * 10000,  # 10000 days
     authenticate=auth.authenticate,
@@ -48,16 +47,22 @@ async def strava_auth_url(request):
 @inject_user()
 @protected()
 async def get_activities(request, user: auth.User):
-    activities = await strava.get_activities(user)
+    try:
+        start = int(request.json['start'])
+        end = int(request.json['end'])
+    except Exception as e:
+        raise ValueError("Request must include start and end integers! "
+                         f"Got request: {str(request.json)}")
+
+    activities = await strava.get_activities(user=user,
+                                             start=start,
+                                             end=end)
 
     logger.info(f"Got activities: {[a.name for a in activities]}")
 
     return json({
         "activities": [
-            {
-                'id': a.id,
-                'name': a.name,
-            }
+            a.to_dict()
             for a in activities
         ]
     })

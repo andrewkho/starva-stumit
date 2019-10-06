@@ -25,7 +25,7 @@ async def authenticate(request, *args, **kwargs):
         if not code:
             raise exceptions.AuthenticationFailed("no code")
 
-        token = await strava.exchange_code_for_token(code)
+        token = await strava._exchange_code_for_token(code)
         print(f"Successfully exchanged code for token: {str(token)}")
         await db_utils.strava_athlete_tokens.put_athlete_token_info(
             strava_token=token
