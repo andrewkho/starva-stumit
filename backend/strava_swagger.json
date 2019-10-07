@@ -1,0 +1,5 @@
+{
+    "packageName": "strava_swagger",
+    "projectName": "strava_swagger",
+    "library": "asyncio"
+}

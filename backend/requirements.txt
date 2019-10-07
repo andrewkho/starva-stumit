@@ -1,7 +1,6 @@
 pyyaml
 sanic
 sanic-jwt
-stravalib
 boto3
 pycryptodome
 aiobotocore

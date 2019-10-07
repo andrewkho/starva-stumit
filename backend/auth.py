@@ -3,7 +3,7 @@ import uuid
 from sanic_jwt import exceptions
 
 import db_utils.user
-import db_utils.strava_athlete_tokens
+import db_utils.strava_tokens
 import strava
 from user import User
 
@@ -16,22 +16,17 @@ async def authenticate(request, *args, **kwargs):
     we'll exchange the code for access tokens, get the athlete_id, and
     register this user.
     """
-    return await User.get(user_id='2e87ddc2-5c57-4f7e-b50d-b30edafcb6f3')
+    # return await User.get(user_id='2e87ddc2-5c57-4f7e-b50d-b30edafcb6f3')
     try:
         user_id = request.json.get('user_id', None)
         if not user_id:
-            user_id = str(uuid.uuid4())
+            # user_id = str(uuid.uuid4())
+            user_id = '2e87ddc2-5c57-4f7e-b50d-b30edafcb6f3'
         code = request.json.get('code', None)
         if not code:
             raise exceptions.AuthenticationFailed("no code")
 
-        token = await strava._exchange_code_for_token(code)
-        print(f"Successfully exchanged code for token: {str(token)}")
-        await db_utils.strava_athlete_tokens.put_athlete_token_info(
-            strava_token=token
-        )
-        print(f"Successfully stored token")
-
+        token = await strava.StravaToken.create_from_code(code)
         user = await User.register(user_id=user_id,
                                    athlete_id=token.athlete_id)
 

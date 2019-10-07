@@ -1,31 +1,32 @@
 import datetime
 import logging
 import sys
+import urllib.parse
 from typing import Dict, List
 
 import aiohttp
-import stravalib
-from stravalib.model import Activity, Athlete
+import strava_swagger
+from strava_swagger import StreamSet, Configuration
 
-import db_utils.strava_athlete_tokens
+import db_utils.strava_tokens
 import secrets
 from user import User
 
-MY_ATHLETE_ID = '42081150'
+# MY_ATHLETE_ID = '42081150'
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 logger.setLevel(logging.INFO)
 
+STRAVA_OAUTH_HOST = 'https://www.strava.com/oauth'
+HOST = 'http://localhost'
+REDIRECT_ROUTE = '/admin/strava/authreturn/'
 
 REQUIRED_SCOPES = [
     'read_all',
     'profile:read_all',
     'activity:read_all',
 ]
-
-HOST = 'http://localhost'
-REDIRECT_ROUTE = '/admin/strava/authreturn/'
 
 
 class StravaToken(object):
@@ -42,7 +43,7 @@ class StravaToken(object):
     async def lookup(cls, athlete_id: str) -> 'StravaToken':
         token_dict = await (
             db_utils
-                .strava_athlete_tokens
+                .strava_tokens
                 .get_athlete_token_info(athlete_id)
         )
 
@@ -66,12 +67,12 @@ class StravaToken(object):
         if token.expires_dt <= datetime.datetime.utcnow():
             logger.info(f"token_expiry {token.expires_dt} is in the past! "
                         f"utcnow {datetime.datetime.utcnow()}. Refreshing...")
-            new_token = await _refresh_access_token(token)
-            await (
-                db_utils
-                .strava_athlete_tokens
-                .put_athlete_token_info(new_token)
+            token_dict = await _refresh_access_token(token.refresh_token)
+            new_token = StravaToken.from_dict(
+                athlete_id=token.athlete_id,
+                token_dict=token_dict,
             )
+            await db_utils.strava_tokens.put_athlete_token_info(new_token)
             return new_token
         else:
             return token
@@ -85,28 +86,14 @@ class StravaToken(object):
         :param code:
         :return:
         """
-        client = stravalib.client.Client()
-
-        try:
-            tokens = client.exchange_code_for_token(
-                client_id=secrets.strava_client_id,
-                client_secret=secrets.strava_client_secret,
-                code=code,
-            )
-        except Exception:
-            raise ValueError("Failed to exchange backend for code")
-
-        try:
-            athlete_id = await get_athlete_id(tokens['access_token'])
-        except Exception:
-            raise ValueError("Failed to get athlete_id with access token")
+        token_dict = await _exchange_code_for_tokens(code)
+        athlete_id = token_dict['athlete']['id']
 
         token = StravaToken.from_dict(athlete_id=athlete_id,
-                                      token_dict=tokens)
-        await db_utils.strava_athlete_tokens.put_athlete_token_info(token)
+                                      token_dict=token_dict)
+        await db_utils.strava_tokens.put_athlete_token_info(token)
 
         return token
-
 
     def __init__(self,
                  strava_athlete_id: str,
@@ -120,43 +107,18 @@ class StravaToken(object):
         self.expires_dt = datetime.datetime.fromtimestamp(self.expires_at)
 
 
-async def get_identity_url() -> str:
-    client = stravalib.client.Client()
-    return client.authorization_url(
-        client_id=secrets.strava_client_id,
-        redirect_uri=HOST + REDIRECT_ROUTE,
-        approval_prompt='auto',
-        scope=REQUIRED_SCOPES,  # This actually requires List[str]
-        state='',
-    )
+def get_identity_url() -> str:
+    url = STRAVA_OAUTH_HOST + '/authorize'
+    qs = urllib.parse.urlencode(query={
+        'client_id': secrets.strava_client_id,
+        'redirect_uri': HOST + REDIRECT_ROUTE,
+        'response_type': 'code',
+        'approval_prompt': 'auto',
+        'scope': ','.join(REQUIRED_SCOPES),
+        'state': '',
+    })
 
-
-async def get_athlete_id(access_token: str) -> str:
-    client = stravalib.client.Client(access_token=access_token)
-    athlete: Athlete = client.get_athlete()
-
-    return athlete.id
-
-
-async def get_activities(user: User, start: int, end: int) -> List[Activity]:
-    """
-
-    :param user: User object with athlete_id
-    :param start: start of range in seconds from epoch
-    :param end: end of range in seconds from epoch
-    :return:
-    """
-    token = await StravaToken.lookup(athlete_id=user.athlete_id)
-    token = await StravaToken.exchange_if_necessary(token)
-
-    client = stravalib.client.Client(access_token=token.access_token)
-
-    # strava.get_activities wants ranges in datetimes
-    after = datetime.datetime.fromtimestamp(start)
-    before = datetime.datetime.fromtimestamp(end)
-    activities = [_ for _ in client.get_activities(after=after,
-                                                   before=before)]
-    return activities
+    return f'{url}?{qs}'
 
 
 async def get_activities_list(user: User, start: int, end: int) -> List[Dict]:
@@ -220,30 +182,46 @@ async def get_activity_streams(user: User,
     token = await StravaToken.lookup(athlete_id=user.athlete_id)
     token = await StravaToken.exchange_if_necessary(token)
 
-    url = f'https://www.strava.com/api/v3/activities/{activity_id}/streams'
-
-    headers = {
-        'Authorization': f'Bearer {token.access_token}'
-    }
-    params = {
-        "keys": ','.join(streamtypes),
-        "keyByType": 'true',
-    }
-    async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.get(url, params=params) as resp:
-            logger.info(f"response status: {resp.status}")
-            data = await resp.json()
-
-    return data
-
-
-async def _refresh_access_token(strava_token: StravaToken) -> StravaToken:
-    client = stravalib.client.Client()
-    new_tokens = client.refresh_access_token(
-        client_id=secrets.strava_client_id,
-        client_secret=secrets.strava_client_secret,
-        refresh_token=strava_token.refresh_token,
+    conf = Configuration()
+    conf.access_token = token.access_token
+    client = strava_swagger.ApiClient(configuration=conf)
+    streams_api = strava_swagger.StreamsApi(client)
+    result:StreamSet = await streams_api.get_activity_streams(
+        id=activity_id,
+        keys=streamtypes,
+        key_by_type=True,
     )
 
-    return StravaToken.from_dict(athlete_id=strava_token.athlete_id,
-                                 token_dict=new_tokens)
+    return result.to_dict()
+
+
+async def _refresh_access_token(refresh_token: str) -> Dict[str, str]:
+    url = STRAVA_OAUTH_HOST + '/token'
+    params = {
+        'client_id': secrets.strava_client_id,
+        'client_secret': secrets.strava_client_secret,
+        'refresh_token ': refresh_token,
+        'grant_type': 'refresh_token',
+    }
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, params=params) as resp:
+                return await resp.json()
+    except Exception:
+        raise ValueError("Failed to exchange backend for code")
+
+
+async def _exchange_code_for_tokens(code: str) -> Dict:
+    url = STRAVA_OAUTH_HOST + '/token'
+    params = {
+        'client_id': secrets.strava_client_id,
+        'client_secret': secrets.strava_client_secret,
+        'code': code,
+        'grant_type': 'authorization_code',
+    }
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, params=params) as resp:
+                return await resp.json()
+    except Exception:
+        raise ValueError("Failed to exchange backend for code")

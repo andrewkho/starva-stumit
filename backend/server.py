@@ -39,7 +39,7 @@ async def test(request):
 @app.route("/api/v1/strava_auth_url")
 async def strava_auth_url(request):
     return json({
-        "auth_url": await strava.get_identity_url(),
+        "auth_url": strava.get_identity_url(),
     })
 
 
@@ -121,7 +121,8 @@ async def get_activity_streams(request, user: auth.User):
     activity_streams = await strava.get_activity_streams(
         user=user, activity_id=activity_id, streamtypes=streamtypes)
 
-    logger.info(f"Got activity streams: {[_['type'] for _ in activity_streams]}")
+    #logger.info(f"Got activity streams: {[_['type'] for _ in activity_streams]}")
+    logger.info(f"Got activity streams: {activity_streams}")
 
     return json(activity_streams)
 
