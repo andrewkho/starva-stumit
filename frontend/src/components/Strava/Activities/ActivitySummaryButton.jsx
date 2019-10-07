@@ -17,14 +17,13 @@ class ActivitySummaryButton extends Component {
     //const zones = axios.post("http://localhost/api/v1/get_activity_details", {
     const zones = axios.post("http://localhost/api/v1/get_activity_streams", {
       "activity_id": this.props.activity.id,
-      "streamtypes": ['velocity_smooth', 'grade_smooth', 'distance', 'heartrate', 'time'],
-      //"streamtypes": [''],
-      //   [
-      //   'HeartrateStream', 'Heartrate',
-      //   'SmoothGradeStream', 'SmoothGrade',
-      //   'SmoothVelocityStream', 'SmoothVelocity',
-      //   'TimeStream', 'Time', 'time'
-      // ],
+      "streamtypes": [
+        'velocity_smooth',
+        'grade_smooth',
+        'distance',
+        'heartrate',
+        'time',
+      ],
     }).then(resp => {
       console.log(JSON.stringify(resp.data))
     }).catch(err => {
