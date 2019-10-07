@@ -45,7 +45,16 @@ class ActivitySummaryButton extends Component {
   }
 
   getMovingTime() {
-    return this.props.activity.moving_time;
+    const total_seconds = this.props.activity.moving_time;
+    let hours = Math.floor(total_seconds / 3600);
+    let minutes = Math.floor((total_seconds - 3600*hours) / 60);
+    let seconds = total_seconds - 3600*hours + 60*minutes;
+
+    if (hours < 10) {hours = `0${hours}`} else {hours = `${hours}`}
+    if (minutes < 10) {minutes = `0${minutes}`} else {minutes = `${minutes}`}
+    if (seconds < 10) {seconds = `0${seconds}`} else {seconds = `${seconds}`}
+
+    return `${hours}:${minutes}:${seconds}`;
   }
 
   getAveragePace() {
@@ -89,12 +98,12 @@ class ActivitySummaryButton extends Component {
             </Col>
           </Row>
           <Row>
-            <Col paddingLeft={3}> Distance {this.getDistance()} </Col>
+            <Col> Distance {this.getDistance()} </Col>
             <Col> Moving Time - {this.getMovingTime()} </Col>
             {this.props.activity.has_heartrate ?
-              <Col paddingLeft={3}> Avg. HR {this.props.activity.average_heartrate}</Col> :
-              {}}
-              <Col>Avg. Pace - {this.getAveragePace()}</Col>
+              <Col> Avg. HR {this.props.activity.average_heartrate}</Col> :
+              ''}
+            <Col>Avg. Pace - {this.getAveragePace()}</Col>
           </Row>
         </Grid>
       </Button>

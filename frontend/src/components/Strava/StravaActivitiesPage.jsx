@@ -80,7 +80,6 @@ class StravaActivitiesPage extends Component {
     const activities_data = await get_activities(this.state.start, this.state.end);
     const activities = [];
     activities_data.forEach(a => activities.push(a));
-
     console.log(JSON.stringify(activities));
     this.setState({
       activities: activities
