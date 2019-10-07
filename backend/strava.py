@@ -226,11 +226,11 @@ async def get_activity_streams(user: User,
         'Authorization': f'Bearer {token.access_token}'
     }
     params = {
-        "type": streamtypes,
-        "keyByType": True,
+        "keys": ','.join(streamtypes),
+        "keyByType": 'true',
     }
     async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.get(url) as resp:
+        async with session.get(url, params=params) as resp:
             logger.info(f"response status: {resp.status}")
             data = await resp.json()
 
