@@ -39,3 +39,10 @@ class User(object):
         return user
 
 
+async def retrieve_user(request, payload, *args, **kwargs):
+    if payload:
+        user_id = payload.get('user_id', None)
+        user = await User.get(user_id=user_id)
+        return user
+    else:
+        return None

@@ -1,22 +1,18 @@
-import datetime
 import logging
 import sys
-import urllib.parse
 from typing import Dict, List
 
 import aiohttp
 import strava_swagger
 from strava_swagger import StreamSet, Configuration
 
-import db_utils.strava_tokens
-import secrets
+from strava_token import StravaToken
 from user import User
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 logger.setLevel(logging.INFO)
 
-STRAVA_OAUTH_HOST = 'https://www.strava.com/oauth'
 HOST = 'http://localhost'
 REDIRECT_ROUTE = '/admin/strava/authreturn/'
 
@@ -25,98 +21,6 @@ REQUIRED_SCOPES = [
     'profile:read_all',
     'activity:read_all',
 ]
-
-
-class StravaToken(object):
-    @classmethod
-    def from_dict(cls, athlete_id: str, token_dict: Dict) -> 'StravaToken':
-        return StravaToken(
-            strava_athlete_id=athlete_id,
-            access_token=token_dict['access_token'],
-            refresh_token=token_dict['refresh_token'],
-            expires_at=token_dict['expires_at'],
-        )
-
-    @classmethod
-    async def lookup(cls, athlete_id: str) -> 'StravaToken':
-        token_dict = await (
-            db_utils
-                .strava_tokens
-                .get_athlete_token_info(athlete_id)
-        )
-
-        if token_dict is None:
-            raise ValueError("Athlete not found!")
-
-        return StravaToken.from_dict(athlete_id=athlete_id,
-                                     token_dict=token_dict)
-
-    @classmethod
-    async def exchange_if_necessary(cls,
-                                    token: 'StravaToken') -> 'StravaToken':
-        """
-        Check if this token needs refreshing, if no, simply
-        return token. If yes then refresh, store, and
-        return new refreshed token.
-
-        :param token:
-        :return:
-        """
-        if token.expires_dt <= datetime.datetime.utcnow():
-            logger.info(f"token_expiry {token.expires_dt} is in the past! "
-                        f"utcnow {datetime.datetime.utcnow()}. Refreshing...")
-            token_dict = await _refresh_access_token(token.refresh_token)
-            new_token = StravaToken.from_dict(
-                athlete_id=token.athlete_id,
-                token_dict=token_dict,
-            )
-            await db_utils.strava_tokens.put_athlete_token_info(new_token)
-            return new_token
-        else:
-            return token
-
-    @classmethod
-    async def create_from_code(cls, code: str) -> 'StravaToken':
-        """
-        Given a code after user authorizes with strava,
-        exchange for tokens, store, and return the token object.
-
-        :param code:
-        :return:
-        """
-        token_dict = await _exchange_code_for_tokens(code)
-        athlete_id = token_dict['athlete']['id']
-
-        token = StravaToken.from_dict(athlete_id=athlete_id,
-                                      token_dict=token_dict)
-        await db_utils.strava_tokens.put_athlete_token_info(token)
-
-        return token
-
-    def __init__(self,
-                 strava_athlete_id: str,
-                 access_token: str,
-                 refresh_token: str,
-                 expires_at: int):
-        self.athlete_id = strava_athlete_id
-        self.access_token = access_token
-        self.refresh_token = refresh_token
-        self.expires_at = expires_at  # seconds from epoch
-        self.expires_dt = datetime.datetime.fromtimestamp(self.expires_at)
-
-
-def get_identity_url() -> str:
-    url = STRAVA_OAUTH_HOST + '/authorize'
-    qs = urllib.parse.urlencode(query={
-        'client_id': secrets.strava_client_id,
-        'redirect_uri': HOST + REDIRECT_ROUTE,
-        'response_type': 'code',
-        'approval_prompt': 'auto',
-        'scope': ','.join(REQUIRED_SCOPES),
-        'state': '',
-    })
-
-    return f'{url}?{qs}'
 
 
 async def get_activities_list(user: User, start: int, end: int) -> List[Dict]:
@@ -186,35 +90,3 @@ async def get_strava_swagger_client(
     # await client.rest_client.pool_manager.close()
 
     return client
-
-
-async def _refresh_access_token(refresh_token: str) -> Dict[str, str]:
-    url = STRAVA_OAUTH_HOST + '/token'
-    params = {
-        'client_id': secrets.strava_client_id,
-        'client_secret': secrets.strava_client_secret,
-        'refresh_token ': refresh_token,
-        'grant_type': 'refresh_token',
-    }
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(url, params=params) as resp:
-                return await resp.json()
-    except Exception:
-        raise ValueError("Failed to exchange backend for code")
-
-
-async def _exchange_code_for_tokens(code: str) -> Dict:
-    url = STRAVA_OAUTH_HOST + '/token'
-    params = {
-        'client_id': secrets.strava_client_id,
-        'client_secret': secrets.strava_client_secret,
-        'code': code,
-        'grant_type': 'authorization_code',
-    }
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(url, params=params) as resp:
-                return await resp.json()
-    except Exception:
-        raise ValueError("Failed to exchange backend for code")
