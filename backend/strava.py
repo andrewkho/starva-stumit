@@ -186,11 +186,14 @@ async def get_activity_streams(user: User,
     conf.access_token = token.access_token
     client = strava_swagger.ApiClient(configuration=conf)
     streams_api = strava_swagger.StreamsApi(client)
-    result:StreamSet = await streams_api.get_activity_streams(
+    result: StreamSet = await streams_api.get_activity_streams(
         id=activity_id,
         keys=streamtypes,
         key_by_type=True,
     )
+
+    # Cleanup, if you want to avoid warnings
+    # await client.rest_client.pool_manager.close()
 
     return result.to_dict()
 
