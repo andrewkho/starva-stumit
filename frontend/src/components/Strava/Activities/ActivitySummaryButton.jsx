@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { Component } from "react";
 import { Button, Grid, Row, Col } from "react-bootstrap";
 
@@ -9,9 +10,26 @@ class ActivitySummaryButton extends Component {
     this.handleClick = this.handleClick.bind(this);
   }
 
-  handleClick() {
+  async handleClick() {
     console.log("activity clicked");
     console.log(`Activity clicked ${this.props.activity.id}`);
+    // const zones = axios.post("http://localhost/api/v1/get_activity_zones", {
+    //const zones = axios.post("http://localhost/api/v1/get_activity_details", {
+    const zones = axios.post("http://localhost/api/v1/get_activity_streams", {
+      "activity_id": this.props.activity.id,
+      "streamtypes": ['velocity_smooth', 'grade_smooth', 'distance', 'heartrate', 'time'],
+      //"streamtypes": [''],
+      //   [
+      //   'HeartrateStream', 'Heartrate',
+      //   'SmoothGradeStream', 'SmoothGrade',
+      //   'SmoothVelocityStream', 'SmoothVelocity',
+      //   'TimeStream', 'Time', 'time'
+      // ],
+    }).then(resp => {
+      console.log(JSON.stringify(resp.data))
+    }).catch(err => {
+      console.error(err)
+    })
   }
 
   round_to(x, digits) {
@@ -62,7 +80,7 @@ class ActivitySummaryButton extends Component {
 
   render() {
     return(
-      <Button onClick={() => this.handleClick}>
+      <Button onClick={this.handleClick}>
         <Grid>
           <Row>
             <Col>

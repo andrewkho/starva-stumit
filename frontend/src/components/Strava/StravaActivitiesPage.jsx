@@ -45,7 +45,7 @@ async function get_activities(start, end) {
 
   console.log("start end " + start_seconds + " " + " " + end_seconds);
 
-  const resp = await axios.post(host + get_activities_route, {
+  const activities = await axios.post(host + get_activities_route, {
     start: start_seconds,
     end: end_seconds,
   }).then((response) => {
@@ -58,7 +58,7 @@ async function get_activities(start, end) {
     console.log(error)
   });
 
-  return resp.activities;
+  return activities;
 }
 
 class StravaActivitiesPage extends Component {

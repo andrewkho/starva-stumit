@@ -3,6 +3,7 @@ import logging
 import sys
 from typing import Dict, List
 
+import aiohttp
 import stravalib
 from stravalib.model import Activity, Athlete
 
@@ -156,6 +157,84 @@ async def get_activities(user: User, start: int, end: int) -> List[Activity]:
     activities = [_ for _ in client.get_activities(after=after,
                                                    before=before)]
     return activities
+
+
+async def get_activities_list(user: User, start: int, end: int) -> List[Dict]:
+    token = await StravaToken.lookup(athlete_id=user.athlete_id)
+    token = await StravaToken.exchange_if_necessary(token)
+
+    url = 'https://www.strava.com/api/v3/athlete/activities'
+
+    headers = {
+        'Authorization': f'Bearer {token.access_token}'
+    }
+    params = {
+        'before': end,
+        'after': start,
+    }
+    async with aiohttp.ClientSession(headers=headers) as session:
+        async with session.get(url, params=params) as resp:
+            logger.info(f"response status: {resp.status}")
+            data = await resp.json()
+
+    return data
+
+
+async def get_activity_zones(user: User, activity_id: int) -> Dict:
+    token = await StravaToken.lookup(athlete_id=user.athlete_id)
+    token = await StravaToken.exchange_if_necessary(token)
+
+    url = f'https://www.strava.com/api/v3/activities/{activity_id}/zones'
+
+    headers = {
+        'Authorization': f'Bearer {token.access_token}'
+    }
+    async with aiohttp.ClientSession(headers=headers) as session:
+        async with session.get(url) as resp:
+            logger.info(f"response status: {resp.status}")
+            data = await resp.json()
+
+    return data
+
+
+async def get_activity_details(user: User, activity_id: int) -> Dict:
+    token = await StravaToken.lookup(athlete_id=user.athlete_id)
+    token = await StravaToken.exchange_if_necessary(token)
+
+    url = f'https://www.strava.com/api/v3/activities/{activity_id}/'
+
+    headers = {
+        'Authorization': f'Bearer {token.access_token}'
+    }
+    async with aiohttp.ClientSession(headers=headers) as session:
+        async with session.get(url) as resp:
+            logger.info(f"response status: {resp.status}")
+            data = await resp.json()
+
+    return data
+
+
+async def get_activity_streams(user: User,
+                               activity_id: int,
+                               streamtypes: List[str]) -> Dict:
+    token = await StravaToken.lookup(athlete_id=user.athlete_id)
+    token = await StravaToken.exchange_if_necessary(token)
+
+    url = f'https://www.strava.com/api/v3/activities/{activity_id}/streams'
+
+    headers = {
+        'Authorization': f'Bearer {token.access_token}'
+    }
+    params = {
+        "type": streamtypes,
+        "keyByType": True,
+    }
+    async with aiohttp.ClientSession(headers=headers) as session:
+        async with session.get(url) as resp:
+            logger.info(f"response status: {resp.status}")
+            data = await resp.json()
+
+    return data
 
 
 async def _refresh_access_token(strava_token: StravaToken) -> StravaToken:
