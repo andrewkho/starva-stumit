@@ -7,8 +7,10 @@ from typing import Optional, Dict
 import aiohttp
 from sanic_jwt import exceptions
 
+import db_utils.refresh_tokens
 import db_utils.user
 import secrets
+import user
 from db_utils import dynamodb
 from strava import HOST, REDIRECT_ROUTE, REQUIRED_SCOPES
 from user import User
@@ -226,9 +228,10 @@ async def authenticate(request, *args, **kwargs):
 
 
 async def store_refresh_token(user_id, refresh_token, *args, **kwargs):
-    await db_utils.user.store_refresh_token(user_id=user_id,
-                                            refresh_token=refresh_token)
+    await db_utils.refresh_tokens.store_refresh_token(
+        user_id=user_id, refresh_token=refresh_token)
 
 
 async def retrieve_refresh_token(user_id, *args, **kwargs):
-    return await db_utils.user.retrieve_refresh_token(user_id=user_id)
+    return await db_utils.refresh_tokens.retrieve_refresh_token(
+        user_id=user_id)
