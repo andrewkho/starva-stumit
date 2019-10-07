@@ -119,15 +119,28 @@ def get_identity_url() -> str:
     return f'{url}?{qs}'
 
 
-async def get_activities_list(user: User,
-                              start: int,
-                              end: int) -> List[Dict]:
-    client = await get_strava_swagger_client(user.athlete_id)
-    api = strava_swagger.ActivitiesApi(client)
-    result = await api.get_logged_in_athlete_activities(
-        before=end, after=start,
-    )
-    return result
+async def get_activities_list(user: User, start: int, end: int) -> List[Dict]:
+    # This function doesn't use the swagger API because data model doesn't
+    # include heart-rate summary, but the raw response does :shrug:
+    token = await StravaToken.lookup(athlete_id=user.athlete_id)
+    token = await StravaToken.exchange_if_necessary(token)
+
+    url = 'https://www.strava.com/api/v3/athlete/activities'
+
+    headers = {
+        'Authorization': f'Bearer {token.access_token}'
+    }
+    params = {
+        'before': end,
+        'after': start,
+        'perPage': 100,
+    }
+    async with aiohttp.ClientSession(headers=headers) as session:
+        async with session.get(url, params=params) as resp:
+            logger.info(f"response status: {resp.status}")
+            data = await resp.json()
+
+    return data
 
 
 async def get_activity_zones(user: User, activity_id: int) -> Dict:
@@ -159,7 +172,9 @@ async def get_activity_streams(user: User,
     return result.to_dict()
 
 
-async def get_strava_swagger_client(athlete_id: str) -> strava_swagger.ApiClient:
+async def get_strava_swagger_client(
+        athlete_id: str
+) -> strava_swagger.ApiClient:
     token = await StravaToken.lookup(athlete_id=athlete_id)
     token = await StravaToken.exchange_if_necessary(token)
 

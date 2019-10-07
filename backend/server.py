@@ -123,7 +123,6 @@ async def get_activity_streams(request, user: auth.User):
     activity_streams = await strava.get_activity_streams(
         user=user, activity_id=activity_id, streamtypes=streamtypes)
 
-    #logger.info(f"Got activity streams: {[_['type'] for _ in activity_streams]}")
     logger.info(f"Got activity streams: {activity_streams}")
 
     return json(activity_streams)
