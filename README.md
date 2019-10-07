@@ -13,6 +13,21 @@ docker-compose -f docker-compose.dev.yml up --build
 ```
 Site should be live at `http://localhost`
 
+## Strava Swagger client
+To regenerate the swagger client (it isn't regenerated in docker image):
+```bash
+swagger-codegen generate \
+-i https://developers.strava.com/swagger/swagger.json \
+-l python \
+-o strava_swagger \
+-c strava_swagger.json 
+
+# In your environment, if you want to dev locally
+cd strava_swagger
+pip install .
+cd ..
+```
+
 ## Login tokens
 Login tokens stored through JWT stored in Cookies. To login, authenticate
 through Strava. To logout, delete the `localhost` cookie `letsplayfootsy-jwt`.
