@@ -12,8 +12,6 @@ import db_utils.strava_tokens
 import secrets
 from user import User
 
-# MY_ATHLETE_ID = '42081150'
-
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 logger.setLevel(logging.INFO)
@@ -121,81 +119,58 @@ def get_identity_url() -> str:
     return f'{url}?{qs}'
 
 
-async def get_activities_list(user: User, start: int, end: int) -> List[Dict]:
-    token = await StravaToken.lookup(athlete_id=user.athlete_id)
-    token = await StravaToken.exchange_if_necessary(token)
-
-    url = 'https://www.strava.com/api/v3/athlete/activities'
-
-    headers = {
-        'Authorization': f'Bearer {token.access_token}'
-    }
-    params = {
-        'before': end,
-        'after': start,
-    }
-    async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.get(url, params=params) as resp:
-            logger.info(f"response status: {resp.status}")
-            data = await resp.json()
-
-    return data
+async def get_activities_list(user: User,
+                              start: int,
+                              end: int) -> List[Dict]:
+    client = await get_strava_swagger_client(user.athlete_id)
+    api = strava_swagger.ActivitiesApi(client)
+    result = await api.get_logged_in_athlete_activities(
+        before=end, after=start,
+    )
+    return result
 
 
 async def get_activity_zones(user: User, activity_id: int) -> Dict:
-    token = await StravaToken.lookup(athlete_id=user.athlete_id)
-    token = await StravaToken.exchange_if_necessary(token)
-
-    url = f'https://www.strava.com/api/v3/activities/{activity_id}/zones'
-
-    headers = {
-        'Authorization': f'Bearer {token.access_token}'
-    }
-    async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.get(url) as resp:
-            logger.info(f"response status: {resp.status}")
-            data = await resp.json()
-
-    return data
+    client = await get_strava_swagger_client(user.athlete_id)
+    api = strava_swagger.ActivitiesApi(client)
+    result = await api.get_zones_by_activity_id(
+        id=activity_id,
+    )
+    return result.to_dict()
 
 
 async def get_activity_details(user: User, activity_id: int) -> Dict:
-    token = await StravaToken.lookup(athlete_id=user.athlete_id)
-    token = await StravaToken.exchange_if_necessary(token)
-
-    url = f'https://www.strava.com/api/v3/activities/{activity_id}/'
-
-    headers = {
-        'Authorization': f'Bearer {token.access_token}'
-    }
-    async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.get(url) as resp:
-            logger.info(f"response status: {resp.status}")
-            data = await resp.json()
-
-    return data
+    client = await get_strava_swagger_client(user.athlete_id)
+    api = strava_swagger.ActivitiesApi(client)
+    result = await api.get_activity_by_id(
+        id=activity_id,
+    )
+    return result.to_dict()
 
 
 async def get_activity_streams(user: User,
                                activity_id: int,
                                streamtypes: List[str]) -> Dict:
-    token = await StravaToken.lookup(athlete_id=user.athlete_id)
+    client = await get_strava_swagger_client(user.athlete_id)
+    api = strava_swagger.StreamsApi(client)
+    result: StreamSet = await api.get_activity_streams(
+        id=activity_id, keys=streamtypes, key_by_type=True,
+    )
+    return result.to_dict()
+
+
+async def get_strava_swagger_client(athlete_id: str) -> strava_swagger.ApiClient:
+    token = await StravaToken.lookup(athlete_id=athlete_id)
     token = await StravaToken.exchange_if_necessary(token)
 
     conf = Configuration()
     conf.access_token = token.access_token
     client = strava_swagger.ApiClient(configuration=conf)
-    streams_api = strava_swagger.StreamsApi(client)
-    result: StreamSet = await streams_api.get_activity_streams(
-        id=activity_id,
-        keys=streamtypes,
-        key_by_type=True,
-    )
 
     # Cleanup, if you want to avoid warnings
     # await client.rest_client.pool_manager.close()
 
-    return result.to_dict()
+    return client
 
 
 async def _refresh_access_token(refresh_token: str) -> Dict[str, str]:

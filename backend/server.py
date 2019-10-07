@@ -57,6 +57,8 @@ async def get_activities(request, user: auth.User):
     activities = await strava.get_activities_list(
         user=user, start=start, end=end)
 
+    logger.info(f"Got activities: {activities}")
+
     return json(activities)
 
 
