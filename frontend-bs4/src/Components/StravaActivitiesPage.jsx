@@ -1,7 +1,12 @@
 import axios from "axios";
 import React from 'react';
-import {Row, Container} from "react-bootstrap";
+import {Row, Container, Navbar, Nav, NavDropdown} from "react-bootstrap";
 import Button from "react-bootstrap/Button";
+import ButtonGroup from "react-bootstrap/ButtonGroup";
+import ActivityCard from "./ActivityCard";
+import CardDeck from "react-bootstrap/CardDeck";
+import CardColumns from "react-bootstrap/CardColumns";
+import Spinner from "react-bootstrap/Spinner";
 
 
 const host = "http://localhost";
@@ -64,65 +69,96 @@ class StravaActivitiesPage extends React.Component {
       activities: [],
       start: start,
       end: end,
+      loading: false,
     };
-    this.handleDateChange = this.handleDateChange.bind(this);
+    this.handlePrev = this.handlePrev.bind(this);
+    this.handleNext = this.handleNext.bind(this);
+    this.update_activities = this.update_activities.bind(this);
   }
 
-  async update_activities() {
-    const activities_data = await get_activities(this.state.start, this.state.end);
+  async update_activities(start, end) {
+    this.setState({
+      loading: true,
+    });
+
+    console.log(`start: ${start}, end: ${end}`);
+    const activities_data = await get_activities(start, end);
     const activities = [];
     activities_data.forEach(a => activities.push(a));
-    console.log(JSON.stringify(activities));
+    activities.sort((x, y) => new Date(x.start_date_local) - new Date(y.start_date_local));
+
     this.setState({
-      activities: activities
-    })
+      loading: false,
+    });
+
+    return activities
   }
 
   async componentDidMount() {
-    await this.update_activities()
+    const activities = await this.update_activities(
+      this.state.start, this.state.end);
+    this.setState({
+      activities: activities,
+    });
   }
 
-  async handleDateChange(event, picker) {
-    console.log("handleDateChange called");
-    const start = getMonday(new Date(picker.startDate));
-    const end = getSundayMidnight(start);
+  async handlePrev() {
+    console.log('handlePrev');
+    let start = new Date(this.state.start);
+    start.setDate(start.getDate() - 7);
+    let end = new Date(this.state.end);
+    end.setDate(end.getDate() - 7);
 
     this.setState({
-        start: start,
-        end: end,
-      });
-    await this.update_activities();
+      start: start,
+      end: end,
+      activities: await this.update_activities(start, end),
+    });
   }
+
+  async handleNext() {
+    console.log('handleNext');
+    let start = new Date(this.state.start);
+    start.setDate(start.getDate() + 7);
+    let end = new Date(this.state.end);
+    end.setDate(end.getDate() + 7);
+
+    this.setState({
+      start: start,
+      end: end,
+      activities: await this.update_activities(start, end),
+    });
+  }
+
 
   render() {
     return (
       <Container>
-        <Row>
-          Select Week
-          {/*<DateRangePicker*/}
-          {/*  weekStart={1}*/}
-          {/*  startDate={this.state.start}*/}
-          {/*  endDate={this.state.end}*/}
-          {/*  onEvent={this.handleDateChange}*/}
-          {/*>*/}
-            <Button>
-              {this.state.start.toLocaleDateString()} -
-              {this.state.end.toLocaleDateString()}
-            </Button>
-          {/*</DateRangePicker>*/}
-        </Row>
-      <Row>
-        Activities List
-      </Row>
-        {/*{*/}
-        {/*  this.state.activities.map((activity) => {*/}
-        {/*    return (*/}
-        {/*      <Row>*/}
-        {/*        <ActivitySummaryButton activity={activity} metric={true}/>*/}
-        {/*      </Row>*/}
-        {/*    )*/}
-        {/*  })*/}
-        {/*}*/}
+        <Navbar collapseOnSelect expand="lg" bg="light" variant="light" fluid>
+          <Navbar.Brand className="mr-auto">Activities</Navbar.Brand>
+          <Navbar.Toggle aria-controls="responsive-navbar-nav"/>
+          <Nav className="mr-auto">
+            <Nav.Item>
+              {this.state.start.toDateString()} - {this.state.end.toDateString()}
+            </Nav.Item>
+          </Nav>
+          <Nav.Item>
+            {this.state.loading ? <Spinner animation="border" /> : ""}
+          </Nav.Item>
+          <Nav.Item>
+            <ButtonGroup>
+              <Button onClick={this.handlePrev}>Prev</Button>
+              <Button onClick={this.handleNext}>Next</Button>
+            </ButtonGroup>
+          </Nav.Item>
+        </Navbar>
+        <CardColumns>
+          {
+            this.state.activities.map((activity) => {
+              return <ActivityCard activity={activity} metric={true}/>
+            })
+          }
+        </CardColumns>
       </Container>
     )
   }

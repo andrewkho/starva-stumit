@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import { Button } from "react-bootstrap";
+import Row from "react-bootstrap/Row";
+import Container from "react-bootstrap/Container";
 
 const host = "http://localhost";
 const get_strava_auth = "/api/v1/strava_auth_url";
@@ -25,9 +27,14 @@ class ConnectToStrava extends Component {
 
   render() {
     return(
-      <Button onClick={() => this.get_auth()}>
-        {this.props.label}
-      </Button>
+      <Container>
+        <Row>
+          <h1>We need you to login to strava to continue!</h1>
+        </Row>
+        <Row>
+          <Button onClick={this.get_auth}>{this.props.label}</Button>
+        </Row>
+      </Container>
     )
   }
 

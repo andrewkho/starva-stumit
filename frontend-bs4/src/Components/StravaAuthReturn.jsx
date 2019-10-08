@@ -1,7 +1,8 @@
 import axios from "axios";
-import React, {Component} from "react";
+import React from "react";
 import {Redirect} from "react-router";
 import qs from "query-string";
+import Spinner from "react-bootstrap/Spinner";
 
 const host = "http://localhost";
 const authorize_route = "/api/auth";
@@ -28,7 +29,7 @@ async function authorize(code) {
   });
 }
 
-class StravaAuthReturn extends Component {
+class StravaAuthReturn extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -75,7 +76,7 @@ class StravaAuthReturn extends Component {
     if (this.state.waiting_for_auth) {
       return (
         <div className="content">
-          <title>Checking credentials...</title>
+          <h1><Spinner animation="border" /> Checking credentials...</h1>
         </div>
       );
     } else {
@@ -83,8 +84,8 @@ class StravaAuthReturn extends Component {
         <div className="content">
           {
             this.state.authorized ?
-              <Redirect to="/admin/strava/"/> :
-              <Redirect to="/admin/strava/auth_failed"/>
+              <Redirect to="/strava"/> :
+              <Redirect to="/strava/authfailed"/>
           }
         </div>
         // window.location.replace(auth_url.auth_url);

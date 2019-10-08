@@ -1,9 +1,11 @@
 import axios from "axios";
 import React, { Component } from "react";
-import { Button, Grid, Row, Col } from "react-bootstrap";
+import Card from "react-bootstrap/Card";
+import ListGroup from "react-bootstrap/ListGroup";
+import ListGroupItem from "react-bootstrap/ListGroupItem";
 
 
-class ActivitySummaryButton extends Component {
+class ActivityCard extends Component {
   constructor(props) {
     super(props);
 
@@ -88,28 +90,36 @@ class ActivitySummaryButton extends Component {
 
   render() {
     return(
-      <Button onClick={this.handleClick}>
-        <Grid>
-          <Row>
-            <Col>
-              {new Date(this.props.activity.start_date_local).toLocaleDateString()} -
-              {this.props.activity.name} -
-              {this.props.activity.type}
-            </Col>
-          </Row>
-          <Row>
-            <Col> Distance {this.getDistance()} </Col>
-            <Col> Moving Time - {this.getMovingTime()} </Col>
-            {this.props.activity.has_heartrate ?
-              <Col> Avg. HR {this.props.activity.average_heartrate}</Col> :
-              ''}
-            <Col>Avg. Pace - {this.getAveragePace()}</Col>
-          </Row>
-        </Grid>
-      </Button>
+      <Card style={{ width: '18rem' }}>
+        <Card.Img variant="top" src="holder.js/100px180" />
+        <Card.Body>
+          <Card.Title>{this.props.activity.name}</Card.Title>
+          <Card.Subtitle className="mb-2 text-muted">
+            {this.props.activity.type} on {new Date(this.props.activity.start_date_local).toLocaleDateString()}
+          </Card.Subtitle>
+          <Card.Text>
+            <ListGroup className="list-group-flush">
+              <ListGroupItem>Distance {this.getDistance()}</ListGroupItem>
+              <ListGroupItem>Moving Time {this.getMovingTime()}</ListGroupItem>
+              <ListGroupItem>Avg. Pace {this.getAveragePace()}</ListGroupItem>
+              {this.props.activity.has_heartrate ?
+                <ListGroupItem>Avg. HR {this.props.activity.average_heartrate}</ListGroupItem> :
+                ''}
+            </ListGroup>
+            {/*<ul>*/}
+            {/*  <li>Distance {this.getDistance()}</li>*/}
+            {/*  <li>Moving Time {this.getMovingTime()}</li>*/}
+            {/*  <li>Avg. Pace {this.getAveragePace()}</li>*/}
+            {/*  {this.props.activity.has_heartrate ?*/}
+            {/*    <li>Avg. HR {this.props.activity.average_heartrate}</li> :*/}
+            {/*    ''}*/}
+            {/*</ul>*/}
+          </Card.Text>
+        </Card.Body>
+      </Card>
     )
   }
 
 }
 
-export default ActivitySummaryButton;
+export default ActivityCard;
