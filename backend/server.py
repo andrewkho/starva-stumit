@@ -5,7 +5,6 @@ from sanic import Sanic
 from sanic.response import json
 from sanic_jwt import Initialize, inject_user, protected
 
-import auth
 import secrets
 import strava
 import strava_token
@@ -48,7 +47,7 @@ async def strava_auth_url(request):
 @app.route("api/v1/get_activities", methods=['POST'])
 @inject_user()
 @protected()
-async def get_activities(request, user: auth.User):
+async def get_activities(request, user: user.User):
     try:
         start = int(request.json['start'])
         end = int(request.json['end'])
@@ -67,7 +66,7 @@ async def get_activities(request, user: auth.User):
 @app.route("api/v1/get_activity_zones", methods=['POST'])
 @inject_user()
 @protected()
-async def get_activity_zones(request, user: auth.User):
+async def get_activity_zones(request, user: user.User):
     try:
         activity_id=int(request.json['activity_id'])
     except Exception as e:
@@ -87,7 +86,7 @@ async def get_activity_zones(request, user: auth.User):
 @app.route("api/v1/get_activity_details", methods=['POST'])
 @inject_user()
 @protected()
-async def get_activity_zones(request, user: auth.User):
+async def get_activity_zones(request, user: user.User):
     try:
         activity_id=int(request.json['activity_id'])
     except Exception as e:
@@ -107,7 +106,7 @@ async def get_activity_zones(request, user: auth.User):
 @app.route("api/v1/get_activity_streams", methods=['POST'])
 @inject_user()
 @protected()
-async def get_activity_streams(request, user: auth.User):
+async def get_activity_streams(request, user: user.User):
     try:
         activity_id=int(request.json['activity_id'])
         logger.info(f"got activity_id: {activity_id}")
@@ -129,7 +128,6 @@ async def get_activity_streams(request, user: auth.User):
 
     return json(activity_streams)
 
-# Route for fetching data for plotting?
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)

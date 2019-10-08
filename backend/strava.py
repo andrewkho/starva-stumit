@@ -13,15 +13,6 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 logger.setLevel(logging.INFO)
 
-HOST = 'http://localhost'
-REDIRECT_ROUTE = '/admin/strava/authreturn/'
-
-REQUIRED_SCOPES = [
-    'read_all',
-    'profile:read_all',
-    'activity:read_all',
-]
-
 
 async def get_activities_list(user: User, start: int, end: int) -> List[Dict]:
     # This function doesn't use the swagger API because data model doesn't

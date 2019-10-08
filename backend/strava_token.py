@@ -10,9 +10,7 @@ from sanic_jwt import exceptions
 import db_utils.refresh_tokens
 import db_utils.user
 import secrets
-import user
 from db_utils import dynamodb
-from strava import HOST, REDIRECT_ROUTE, REQUIRED_SCOPES
 from user import User
 
 logger = logging.getLogger(__name__)
@@ -20,6 +18,15 @@ logger.addHandler(logging.StreamHandler(sys.stdout))
 logger.setLevel(logging.INFO)
 
 STRAVA_OAUTH_HOST = 'https://www.strava.com/oauth'
+
+HOST = 'http://localhost'
+REDIRECT_ROUTE = '/admin/strava/authreturn/'
+
+REQUIRED_SCOPES = [
+    'read_all',
+    'profile:read_all',
+    'activity:read_all',
+]
 
 
 def get_identity_url() -> str:
@@ -67,15 +74,23 @@ class StravaToken(object):
         :param token:
         :return:
         """
-        if token.expires_dt <= datetime.datetime.utcnow():
-            logger.info(f"token_expiry {token.expires_dt} is in the past! "
-                        f"utcnow {datetime.datetime.utcnow()}. Refreshing...")
-            token_dict = await _refresh_access_token(token.refresh_token)
-            new_token = StravaToken.from_dict(
-                athlete_id=token.athlete_id,
-                token_dict=token_dict,
-            )
-            await _put_athlete_token_info(new_token)
+        expire_threshold = (datetime.datetime.utcnow()
+                            + datetime.timedelta(hours=1))
+
+        if token.expires_dt <= expire_threshold:
+            logger.info(f"token_expiry {token.expires_dt} is in the past or "
+                        f"within one hour of utcnow "
+                        f"{datetime.datetime.utcnow()}! Refreshing...")
+            try:
+                token_dict = await _refresh_access_token(token.refresh_token)
+                new_token = StravaToken.from_dict(
+                    athlete_id=token.athlete_id,
+                    token_dict=token_dict,
+                )
+                await _put_athlete_token_info(new_token)
+            except Exception:
+                raise exceptions.AuthenticationFailed(
+                    "Failed to refresh token!")
             return new_token
         else:
             return token
@@ -172,12 +187,14 @@ async def _refresh_access_token(refresh_token: str) -> Dict[str, str]:
     params = {
         'client_id': secrets.strava_client_id,
         'client_secret': secrets.strava_client_secret,
-        'refresh_token ': refresh_token,
         'grant_type': 'refresh_token',
+        'refresh_token': refresh_token,
     }
     try:
         async with aiohttp.ClientSession() as session:
             async with session.post(url, params=params) as resp:
+                if resp.status != 200:
+                    raise ValueError()
                 return await resp.json()
     except Exception:
         raise ValueError("Failed to exchange backend for code")
@@ -194,6 +211,8 @@ async def _exchange_code_for_tokens(code: str) -> Dict:
     try:
         async with aiohttp.ClientSession() as session:
             async with session.post(url, params=params) as resp:
+                if resp.status != 200:
+                    raise ValueError()
                 return await resp.json()
     except Exception:
         raise ValueError("Failed to exchange backend for code")
