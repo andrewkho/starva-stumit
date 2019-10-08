@@ -25,13 +25,12 @@ services:
       - RUN_MODE=local
 
   frontend:
-    build: ./frontend
+    build: ./frontend-bs4
     container_name: frontend
     volumes:
-      - ./frontend/Documentation:/app/Documentation/
-      - ./frontend/public:/app/public/
-      - ./frontend/src:/app/src/
-      - ./frontend/jsconfig.json:/app/jsconfig.json
+      - ./frontend-bs4/public:/app/public/
+      - ./frontend-bs4/src:/app/src/
+      - ./frontend-bs4/package.json:/app/package.json
     expose:
       - "3000"
 
