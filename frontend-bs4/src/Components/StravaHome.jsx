@@ -10,10 +10,10 @@ class StravaHome extends React.Component {
     return (
       <Container>
         <Row>
-          <h1> Welcome to Starva Stumit </h1>
+          <h1> Welcome to Starva STumit </h1>
         </Row>
         <Row>
-          <StravaActivitiesPage />
+          <StravaActivitiesPage {...this.props}/>
         </Row>
       </Container>
     )

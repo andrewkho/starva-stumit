@@ -1,9 +1,9 @@
 import * as React from "react";
 import verify_jwt from "./VerifyJwt";
-import StravaHome from "./StravaHome";
 import ConnectToStrava from "./ConnectToStrava";
 import Container from "react-bootstrap/Container";
 import Spinner from "react-bootstrap/Spinner";
+import {Redirect} from "react-router-dom";
 
 
 class StravaGateway extends React.Component {
@@ -11,7 +11,7 @@ class StravaGateway extends React.Component {
     super(props);
 
     this.state = {
-      to_display: '',
+      verified: null,
       loading: true,
     };
   }
@@ -22,13 +22,13 @@ class StravaGateway extends React.Component {
     if (verified) {
       console.log("Successfully verified jwt!");
       this.setState({
-        to_display: <StravaHome />,
+        verified: true,
         loading: false,
       });
     } else {
       console.log("Failed to verify jwt!");
       this.setState({
-        to_display: <ConnectToStrava label="Connect To Strava"/>,
+        verified: false,
         loading: false,
       });
     }
@@ -43,7 +43,13 @@ class StravaGateway extends React.Component {
       )
     } else {
       return (
-          this.state.to_display
+        <div>
+        {
+          this.state.verified ?
+            <Redirect to="/strava" /> :
+            <ConnectToStrava />
+        }
+        </div>
       );
     }
   }

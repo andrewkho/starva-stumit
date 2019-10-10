@@ -1,6 +1,6 @@
 import axios from "axios";
 import React from "react";
-import {Redirect} from "react-router";
+import {Redirect} from "react-router-dom";
 import qs from "query-string";
 import Spinner from "react-bootstrap/Spinner";
 

@@ -6,6 +6,7 @@ import qs from "query-string";
 import Row from "react-bootstrap/Row";
 import Plot from 'react-plotly.js';
 import Col from "react-bootstrap/Col";
+import { Redirect } from "react-router-dom";
 
 
 class ActivityDetail extends Component {
@@ -13,6 +14,7 @@ class ActivityDetail extends Component {
     super(props);
     const query_params = qs.parse(this.props.location.search);
     this.state = {
+      authorized: true,
       activity_id: query_params.activity_id,
       activity: null,
       streams: null,
@@ -35,7 +37,10 @@ class ActivityDetail extends Component {
 
       this.load_map()
     }).catch(err => {
-      console.error(err)
+      console.error(err);
+      this.setState({
+        authorized: false,
+      });
     });
     axios.post("http://localhost/api/v1/get_activity_streams", {
       "activity_id": this.state.activity_id,
@@ -52,7 +57,10 @@ class ActivityDetail extends Component {
         streams: resp.data,
       })
     }).catch(err => {
-      console.error(err)
+      console.error(err);
+      this.setState({
+        authorized: false,
+      })
     });
 
     axios.post("http://localhost/api/v1/get_athlete_zones"
@@ -62,7 +70,10 @@ class ActivityDetail extends Component {
         zones: resp.data,
       })
     }).catch(err => {
-      console.error(err)
+      console.error(err);
+      this.setState({
+        authorized: false,
+      });
     });
   }
 
@@ -278,33 +289,39 @@ class ActivityDetail extends Component {
   }
 
   render() {
-    return(
-      <Container fluid>
-        <div id='map' style={{height: '40vh', width: '100vw'}}>.</div>
-        <Row>
-          <Col>
-            {!this.state.activity ?
-               <h1>Loading...</h1> :
-               <div>
-                 <Row>Distance {this.getDistance()}</Row>
-                 <Row>Moving Time {this.getMovingTime()}</Row>
-                 <Row>Avg. Pace {this.getAveragePace()}</Row>
-                 {this.state.activity.has_heartrate ?
-                   <Row>Avg. HR {this.state.activity.average_heartrate}</Row> :
-                   ''}
-                 <Row>{this.state.activity.description}</Row>
-               </div>
-            }
-          </Col>
-          <Col>
-            {this.state.streams && this.state.activity ? this.hr_plot() : ''}
-          </Col>
-          <Col>
-            {this.state.streams && this.state.activity && this.state.zones ? this.hr_zone_plot() : ''}
-          </Col>
-        </Row>
-  </Container>
-    )
+    if (this.state.authorized) {
+      return (
+        <Container fluid>
+          <div id='map' style={{height: '40vh', width: '100vw'}}>.</div>
+          <Row>
+            <Col>
+              {!this.state.activity ?
+                <h1>Loading...</h1> :
+                <div>
+                  <Row>Distance {this.getDistance()}</Row>
+                  <Row>Moving Time {this.getMovingTime()}</Row>
+                  <Row>Avg. Pace {this.getAveragePace()}</Row>
+                  {this.state.activity.has_heartrate ?
+                    <Row>Avg. HR {this.state.activity.average_heartrate}</Row> :
+                    ''}
+                  <Row>{this.state.activity.description}</Row>
+                </div>
+              }
+            </Col>
+            <Col>
+              {this.state.streams && this.state.activity ? this.hr_plot() : ''}
+            </Col>
+            <Col>
+              {this.state.streams && this.state.activity && this.state.zones ? this.hr_zone_plot() : ''}
+            </Col>
+          </Row>
+        </Container>
+      )
+    } else {
+      return (
+        <Redirect to="/"/>
+      )
+    }
   }
 
 }

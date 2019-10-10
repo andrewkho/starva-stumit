@@ -32,7 +32,7 @@ class ConnectToStrava extends Component {
           <h1>We need you to login to strava to continue!</h1>
         </Row>
         <Row>
-          <Button onClick={this.get_auth}>{this.props.label}</Button>
+          <Button onClick={this.get_auth}>Connect to Strava</Button>
         </Row>
       </Container>
     )

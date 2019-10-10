@@ -7,7 +7,7 @@ import { LinkContainer } from 'react-router-bootstrap'
 import Button from "react-bootstrap/Button";
 
 
-class StravaHome extends React.Component {
+class FourOhFour extends React.Component {
   render() {
     return (
       <Container>
@@ -24,4 +24,4 @@ class StravaHome extends React.Component {
   }
 }
 
-export default StravaHome;
+export default FourOhFour;

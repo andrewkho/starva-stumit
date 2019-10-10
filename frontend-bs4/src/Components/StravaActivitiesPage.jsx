@@ -6,7 +6,7 @@ import ButtonGroup from "react-bootstrap/ButtonGroup";
 import ActivityCard from "./ActivityCard";
 import CardColumns from "react-bootstrap/CardColumns";
 import Spinner from "react-bootstrap/Spinner";
-import {Link} from "react-router-dom";
+import {Redirect, Link} from "react-router-dom";
 import qs from "query-string";
 
 
@@ -37,24 +37,6 @@ function dateToEpochSeconds(day) {
   return Math.round(day.getTime() / 1000);
 }
 
-async function get_activities(start, end) {
-  const start_seconds = dateToEpochSeconds(start);
-  const end_seconds = dateToEpochSeconds(end);
-
-  console.log("start end " + start_seconds + " " + end_seconds);
-
-  const activities = await axios.post(host + get_activities_route, {
-    start: start_seconds,
-    end: end_seconds,
-  }).then((response) => {
-    return response.data;
-  }).catch((error) => {
-    console.log(error)
-  });
-
-  return activities;
-}
-
 class StravaActivitiesPage extends React.Component {
   constructor(props) {
     super(props);
@@ -74,6 +56,7 @@ class StravaActivitiesPage extends React.Component {
     }
 
     this.state = {
+      authorized: true,
       activities: [],
       start: start,
       end: end,
@@ -85,15 +68,36 @@ class StravaActivitiesPage extends React.Component {
     this.update_activities = this.update_activities.bind(this);
   }
 
+  async get_activities(start, end) {
+    const start_seconds = dateToEpochSeconds(start);
+    const end_seconds = dateToEpochSeconds(end);
+
+    console.log("start end " + start_seconds + " " + end_seconds);
+
+    const activities = await axios.post(host + get_activities_route, {
+      start: start_seconds,
+      end: end_seconds,
+    }).then((response) => {
+      return response.data;
+    }).catch((error) => {
+      console.log(error);
+      this.setState({
+        authorized: false,
+      });
+    });
+
+    return activities;
+  }
+
   async update_activities(start, end) {
     this.setState({
       loading: true,
     });
 
     console.log(`start: ${start}, end: ${end}`);
-    const activities_data = await get_activities(start, end);
+    const activities_data = await this.get_activities(start, end);
     const activities = [];
-    if (activities_data.length > 0) {
+    if (activities_data && activities_data.length > 0) {
       activities_data.forEach(a => activities.push(a));
       activities.sort((x, y) => new Date(x.start_date_local) - new Date(y.start_date_local));
     }
@@ -142,43 +146,49 @@ class StravaActivitiesPage extends React.Component {
   }
 
   render() {
-    return (
-      <Container>
-        <Navbar collapseOnSelect expand="lg" bg="light" variant="light">
-          <Navbar.Brand className="mr-auto">Activities</Navbar.Brand>
-          <Navbar.Toggle aria-controls="responsive-navbar-nav"/>
-          <Nav className="mr-auto">
+    if (this.state.authorized) {
+      return (
+        <Container>
+          <Navbar collapseOnSelect expand="lg" bg="light" variant="light">
+            <Navbar.Brand className="mr-auto">Activities</Navbar.Brand>
+            <Navbar.Toggle aria-controls="responsive-navbar-nav"/>
+            <Nav className="mr-auto">
+              <Nav.Item>
+                {this.state.start.toDateString()} - {this.state.end.toDateString()}
+              </Nav.Item>
+            </Nav>
             <Nav.Item>
-              {this.state.start.toDateString()} - {this.state.end.toDateString()}
+              {this.state.loading ? <Spinner animation="border"/> : ""}
             </Nav.Item>
-          </Nav>
-          <Nav.Item>
-            {this.state.loading ? <Spinner animation="border" /> : ""}
-          </Nav.Item>
-          <Nav.Item>
-            <ButtonGroup>
-              <a href={this.getPrev()}>
-                <Button>Prev</Button>
-              </a>
-              <a href={this.getNext()}>
-                <Button>Next</Button>
-              </a>
-            </ButtonGroup>
-          </Nav.Item>
-        </Navbar>
-        <CardColumns>
-          {
-            this.state.activities.map((activity) => {
-              return (
+            <Nav.Item>
+              <ButtonGroup>
+                <a href={this.getPrev()}>
+                  <Button>Prev</Button>
+                </a>
+                <a href={this.getNext()}>
+                  <Button>Next</Button>
+                </a>
+              </ButtonGroup>
+            </Nav.Item>
+          </Navbar>
+          <CardColumns>
+            {
+              this.state.activities.map((activity) => {
+                return (
                   <Link to={`/strava/activity?activity_id=${activity.id}&metric=${this.state.metric}`}>
                     <ActivityCard activity={activity} metric={this.state.metric}/>
                   </Link>
-              )
-            })
-          }
-        </CardColumns>
-      </Container>
-    )
+                )
+              })
+            }
+          </CardColumns>
+        </Container>
+      )
+    } else {
+      return (
+        <Redirect to='/'/>
+      )
+    }
   }
 }
 
