@@ -15,6 +15,7 @@ class ActivityDetail extends Component {
       activity_id: query_params.activity_id,
       activity: null,
       streams: null,
+      zones: null,
       loading: true,
       metric: query_params.metric,
     };
@@ -23,8 +24,6 @@ class ActivityDetail extends Component {
 
   async componentDidMount() {
     console.log(`activity_id: ${this.state.activity_id}`);
-    // const zones = axios.post("http://localhost/api/v1/get_activity_zones", {
-    //const zones = axios.post("http://localhost/api/v1/get_activity_details", {
     axios.post("http://localhost/api/v1/get_activity_details", {
       "activity_id": this.state.activity_id,
     }).then(resp => {
@@ -47,9 +46,19 @@ class ActivityDetail extends Component {
         'time',
       ],
     }).then(resp => {
-      console.log(JSON.stringify(resp.data));
+      console.log('fetched streams');
       this.setState({
         streams: resp.data,
+      })
+    }).catch(err => {
+      console.error(err)
+    });
+
+    axios.post("http://localhost/api/v1/get_athlete_zones"
+    ).then(resp => {
+      console.log('fetched zones: ' + JSON.stringify(resp.data));
+      this.setState({
+        zones: resp.data,
       })
     }).catch(err => {
       console.error(err)
@@ -107,9 +116,6 @@ class ActivityDetail extends Component {
   getAveragePace() {
     // Convert m/s to min/km for metric, min/mi for
     const mps = this.state.activity.average_speed;
-
-    console.log(this.state.activity.type);
-
     if (this.state.activity.type === 'Run') {
       const pace = this.convertToPace(mps, this.state.metric);
       let mins = Math.floor(pace);
@@ -142,7 +148,7 @@ class ActivityDetail extends Component {
     document.body.appendChild(script);
     script.async = true;
     console.log('add polyline to map');
-    const latlngs = polyUtil.decode(this.state.activity.map.summary_polyline);
+    const latlngs = polyUtil.decode(this.state.activity.map.polyline);
 
     script.onload = function () {
       const pl = window.tomtom.L.polyline(latlngs);
@@ -171,28 +177,102 @@ class ActivityDetail extends Component {
 
   hr_plot() {
     const x = this.state.streams.distance.data.map(u => u/1000);
+    const velocity_name = this.state.activity.type === 'Run' ? 'Pace' : 'Speed';
+    const max_pace = Math.max(...this.state.streams.velocity_smooth.data);
+    const min_pace = Math.min(...this.state.streams.velocity_smooth.data);
+    const max_hr = Math.max(...this.state.streams.heartrate.data);
+    const min_hr = Math.min(...this.state.streams.heartrate.data);
+
+    console.log(`${min_hr}, ${max_hr}, ${min_pace}, ${max_pace}`);
+
     const plot_data = [
       {
-        label: 'heartrate',
+        name: 'Heart Rate',
         type: 'line',
         x: x,
         y: this.state.streams.heartrate.data,
         marker: {color: 'red'},
       },
       {
-        label: 'velocity',
+        name: velocity_name,
         type: 'line',
         x: x,
+        // y: this.state.streams.velocity_smooth.data.map(u => 1 / this.convertToPace(u)),
         y: this.state.streams.velocity_smooth.data.map(this.convertToPace),
+        yaxis: 'y2',
         marker: {color: 'blue'},
       },
     ];
 
+    const layout = {
+      title: 'Stream data',
+      width: "60vw",
+      height: "40vh",
+      yaxis: {
+        title: 'Heart Rate',
+        titlefont: {color: '#ff7f0e'},
+        tickfont: {color: '#ff7f0e'},
+        range: [0, max_hr],
+      },
+      yaxis2: {
+        title: velocity_name,
+        titlefont: {color: '#ff7f0e'},
+        tickfont: {color: '#ff7f0e'},
+        anchor: 'x',
+        overlaying: 'y',
+        side: 'right',
+        // autorange: this.state.activity.type === 'Run' ? 'reversed' : true,
+        range: [14, 0],
+      },
+    };
+
     return (
       <Plot
         data={plot_data}
-        layout={{width: "60vw", height: "40vh", title: 'Stream data'}}
+        layout={layout}
       />
+    )
+  }
+
+  hr_zone_plot() {
+    //{"heart_rate":{"custom_zones":false,"zones":[{"min":0,"max":125},{"min":125,"max":156},{"min":156,"max":171},{"min":171,"max":187},{"min":187,"max":-1}]},"power":null}
+
+    const zones = this.state.zones.heart_rate.zones;
+    let zone_spec = [];
+    let labels = [];
+    let bins = [];
+    for (let i=0; i<zones.length; i++) {
+      zone_spec.push(zones[i]);
+      labels.push(`Zone ${i+1}`);
+      bins.push(0);
+    }
+
+    this.state.streams.heartrate.data.map((hr) => {
+      for (let i=0; i<zone_spec.length; i++) {
+        if (zone_spec[i].max > hr || zone_spec[i].max === -1) {
+          bins[i] += 1;
+          break;
+        }
+      }
+      return null;
+    });
+
+    var data = [{
+      values: bins.map(u => u/this.state.streams.heartrate.data.length),
+      labels: labels,
+      type: 'pie',
+      sort: false,
+      direction: 'clockwise',
+    }];
+
+    var layout = {
+      height: 400,
+      width: 500,
+      title: 'Heart-rate Zones',
+    };
+
+    return (
+      <Plot data={data} layout={layout} />
     )
   }
 
@@ -212,7 +292,8 @@ class ActivityDetail extends Component {
            </div>
         }
         {this.state.streams && this.state.activity ? this.hr_plot() : ''}
-      </Container>
+        {this.state.streams && this.state.activity && this.state.zones ? this.hr_zone_plot() : ''}
+  </Container>
     )
   }
 

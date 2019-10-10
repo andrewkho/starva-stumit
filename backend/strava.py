@@ -38,6 +38,13 @@ async def get_activities_list(user: User, start: int, end: int) -> List[Dict]:
     return data
 
 
+async def get_athlete_zones(user: User) -> Dict:
+    client = await get_strava_swagger_client(user.athlete_id)
+    api = strava_swagger.AthletesApi(client)
+    result = await api.get_logged_in_athlete_zones()
+    return result.to_dict()
+
+
 async def get_activity_zones(user: User, activity_id: int) -> Dict:
     client = await get_strava_swagger_client(user.athlete_id)
     api = strava_swagger.ActivitiesApi(client)

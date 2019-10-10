@@ -63,6 +63,16 @@ async def get_activities(request, user: user.User):
     return json(activities)
 
 
+@app.route("api/v1/get_athlete_zones", methods=['POST'])
+@inject_user()
+@protected()
+async def get_activity_zones(request, user: user.User):
+    zones = await strava.get_athlete_zones(user=user)
+    logger.info(f"Got athlete zones: {str(zones)}")
+
+    return json(zones)
+
+
 @app.route("api/v1/get_activity_zones", methods=['POST'])
 @inject_user()
 @protected()
