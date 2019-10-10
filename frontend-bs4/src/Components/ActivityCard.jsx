@@ -69,23 +69,33 @@ class ActivityCard extends Component {
     document.body.appendChild(script);
     script.async = true;
     console.log('add polyline to map');
-    const latlngs = polyUtil.decode(this.props.activity.map.summary_polyline);
-    const map_id = "map_" + this.props.activity.id;
-    script.onload = function () {
-      let map = window.tomtom.L.map(map_id, {
-        source: 'vector',
-        key: '9p8KAUamPjZiFTObd29KDLojlhDr4qgr',
-        center: [37.769167, -122.478468],
-        basePath: '/tomtom-sdk',
-        zoom: 15,
-        zoomControl: false,
-        width: '100vw',
-        height: '100vh',
-      });
+    if (this.props.activity.map && this.props.activity.map.summary_polyline) {
+      const latlngs = polyUtil.decode(this.props.activity.map.summary_polyline);
+      const map_id = "map_" + this.props.activity.id;
+      script.onload = function () {
+        const pl = window.tomtom.L.polyline(latlngs);
+        const pl_bounds = pl.getBounds();
+        const centre = [
+          (pl_bounds._northEast.lat + pl_bounds._southWest.lat) / 2,
+          (pl_bounds._northEast.lng + pl_bounds._southWest.lng) / 2,
+        ];
+        let map = window.tomtom.L.map(map_id, {
+          source: 'vector',
+          key: '9p8KAUamPjZiFTObd29KDLojlhDr4qgr',
+          center: centre,
+          basePath: '/tomtom-sdk',
+          zoom: 15,
+          zoomControl: false,
+          doubleClickZoom: false,
+          dragging: false,
+          scrollWheelZoom: false,
+          width: '100vw',
+          height: '100vh',
+        });
 
-      const pl = window.tomtom.L.polyline(latlngs);
-      pl.addTo(map);
-      map.fitBounds(pl.getBounds());
+        pl.addTo(map);
+        map.fitBounds(pl.getBounds());
+      }
     }
   }
 

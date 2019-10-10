@@ -5,6 +5,7 @@ import Container from "react-bootstrap/Container";
 import qs from "query-string";
 import Row from "react-bootstrap/Row";
 import Plot from 'react-plotly.js';
+import Col from "react-bootstrap/Col";
 
 
 class ActivityDetail extends Component {
@@ -162,7 +163,7 @@ class ActivityDetail extends Component {
       let map = window.tomtom.L.map('map', {
         source: 'vector',
         key: '9p8KAUamPjZiFTObd29KDLojlhDr4qgr',
-        center: [37.769167, -122.478468],
+        center: centre,
         basePath: '/tomtom-sdk',
         zoom: 15,
         zoomControl: true,
@@ -280,19 +281,28 @@ class ActivityDetail extends Component {
     return(
       <Container fluid>
         <div id='map' style={{height: '40vh', width: '100vw'}}>.</div>
-        {!this.state.activity ?
-           <h1>Loading...</h1> :
-           <div>
-             <Row>Distance {this.getDistance()}</Row>
-             <Row>Moving Time {this.getMovingTime()}</Row>
-             <Row>Avg. Pace {this.getAveragePace()}</Row>
-             {this.state.activity.has_heartrate ?
-               <Row>Avg. HR {this.state.activity.average_heartrate}</Row> :
-               ''}
-           </div>
-        }
-        {this.state.streams && this.state.activity ? this.hr_plot() : ''}
-        {this.state.streams && this.state.activity && this.state.zones ? this.hr_zone_plot() : ''}
+        <Row>
+          <Col>
+            {!this.state.activity ?
+               <h1>Loading...</h1> :
+               <div>
+                 <Row>Distance {this.getDistance()}</Row>
+                 <Row>Moving Time {this.getMovingTime()}</Row>
+                 <Row>Avg. Pace {this.getAveragePace()}</Row>
+                 {this.state.activity.has_heartrate ?
+                   <Row>Avg. HR {this.state.activity.average_heartrate}</Row> :
+                   ''}
+                 <Row>{this.state.activity.description}</Row>
+               </div>
+            }
+          </Col>
+          <Col>
+            {this.state.streams && this.state.activity ? this.hr_plot() : ''}
+          </Col>
+          <Col>
+            {this.state.streams && this.state.activity && this.state.zones ? this.hr_zone_plot() : ''}
+          </Col>
+        </Row>
   </Container>
     )
   }

@@ -6,8 +6,8 @@ import ButtonGroup from "react-bootstrap/ButtonGroup";
 import ActivityCard from "./ActivityCard";
 import CardColumns from "react-bootstrap/CardColumns";
 import Spinner from "react-bootstrap/Spinner";
-import {Map, TileLayer} from "react-leaflet";
 import {Link} from "react-router-dom";
+import qs from "query-string";
 
 
 const host = "http://localhost";
@@ -47,11 +47,7 @@ async function get_activities(start, end) {
     start: start_seconds,
     end: end_seconds,
   }).then((response) => {
-    console.log("Got response " + JSON.stringify(response));
     return response.data;
-  }).then((data) => {
-    console.log("Got data " + JSON.stringify(data));
-    return data
   }).catch((error) => {
     console.log(error)
   });
@@ -63,8 +59,19 @@ class StravaActivitiesPage extends React.Component {
   constructor(props) {
     super(props);
 
-    const start = getMonday(new Date());
-    const end = getSundayMidnight(start);
+    let start, end;
+    if (!this.props.location || !this.props.location.search) {
+      start = getMonday(new Date());
+      end = getSundayMidnight(start);
+    } else {
+      console.log("processing query params");
+      const query_params = qs.parse(this.props.location.search);
+
+      start = new Date(0);
+      start.setUTCSeconds(query_params.start);
+      end = new Date(0);
+      end.setUTCSeconds(query_params.end);
+    }
 
     this.state = {
       activities: [],
@@ -73,8 +80,8 @@ class StravaActivitiesPage extends React.Component {
       loading: false,
       metric: true,
     };
-    this.handlePrev = this.handlePrev.bind(this);
-    this.handleNext = this.handleNext.bind(this);
+    this.getPrev = this.getPrev.bind(this);
+    this.getNext = this.getNext.bind(this);
     this.update_activities = this.update_activities.bind(this);
   }
 
@@ -86,8 +93,10 @@ class StravaActivitiesPage extends React.Component {
     console.log(`start: ${start}, end: ${end}`);
     const activities_data = await get_activities(start, end);
     const activities = [];
-    activities_data.forEach(a => activities.push(a));
-    activities.sort((x, y) => new Date(x.start_date_local) - new Date(y.start_date_local));
+    if (activities_data.length > 0) {
+      activities_data.forEach(a => activities.push(a));
+      activities.sort((x, y) => new Date(x.start_date_local) - new Date(y.start_date_local));
+    }
 
     this.setState({
       loading: false,
@@ -104,38 +113,38 @@ class StravaActivitiesPage extends React.Component {
     });
   }
 
-  async handlePrev() {
+  getPrev() {
     console.log('handlePrev');
     let start = new Date(this.state.start);
     start.setDate(start.getDate() - 7);
     let end = new Date(this.state.end);
     end.setDate(end.getDate() - 7);
 
-    this.setState({
-      start: start,
-      end: end,
-      activities: await this.update_activities(start, end),
-    });
+    const start_secs = Math.round(start.getTime() / 1000);
+    const end_secs = Math.round(end.getTime() / 1000);
+    const path = `/strava?start=${start_secs}&end=${end_secs}`;
+    console.log(path);
+    return path
   }
 
-  async handleNext() {
+  getNext() {
     console.log('handleNext');
     let start = new Date(this.state.start);
     start.setDate(start.getDate() + 7);
     let end = new Date(this.state.end);
     end.setDate(end.getDate() + 7);
 
-    this.setState({
-      start: start,
-      end: end,
-      activities: await this.update_activities(start, end),
-    });
+    const start_secs = Math.round(start.getTime() / 1000);
+    const end_secs = Math.round(end.getTime() / 1000);
+    const path = `/strava?start=${start_secs}&end=${end_secs}`;
+    console.log(path);
+    return path;
   }
 
   render() {
     return (
       <Container>
-        <Navbar collapseOnSelect expand="lg" bg="light" variant="light" fluid>
+        <Navbar collapseOnSelect expand="lg" bg="light" variant="light">
           <Navbar.Brand className="mr-auto">Activities</Navbar.Brand>
           <Navbar.Toggle aria-controls="responsive-navbar-nav"/>
           <Nav className="mr-auto">
@@ -148,8 +157,12 @@ class StravaActivitiesPage extends React.Component {
           </Nav.Item>
           <Nav.Item>
             <ButtonGroup>
-              <Button onClick={this.handlePrev}>Prev</Button>
-              <Button onClick={this.handleNext}>Next</Button>
+              <a href={this.getPrev()}>
+                <Button>Prev</Button>
+              </a>
+              <a href={this.getNext()}>
+                <Button>Next</Button>
+              </a>
             </ButtonGroup>
           </Nav.Item>
         </Navbar>
