@@ -1,12 +1,13 @@
 import axios from "axios";
 import React from 'react';
-import {Row, Container, Navbar, Nav, NavDropdown} from "react-bootstrap";
+import {Container, Navbar, Nav} from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import ActivityCard from "./ActivityCard";
-import CardDeck from "react-bootstrap/CardDeck";
 import CardColumns from "react-bootstrap/CardColumns";
 import Spinner from "react-bootstrap/Spinner";
+import {Map, TileLayer} from "react-leaflet";
+import {Link} from "react-router-dom";
 
 
 const host = "http://localhost";
@@ -70,6 +71,7 @@ class StravaActivitiesPage extends React.Component {
       start: start,
       end: end,
       loading: false,
+      metric: true,
     };
     this.handlePrev = this.handlePrev.bind(this);
     this.handleNext = this.handleNext.bind(this);
@@ -130,7 +132,6 @@ class StravaActivitiesPage extends React.Component {
     });
   }
 
-
   render() {
     return (
       <Container>
@@ -155,7 +156,11 @@ class StravaActivitiesPage extends React.Component {
         <CardColumns>
           {
             this.state.activities.map((activity) => {
-              return <ActivityCard activity={activity} metric={true}/>
+              return (
+                  <Link to={`/strava/activity?activity_id=${activity.id}&metric=${this.state.metric}`}>
+                    <ActivityCard activity={activity} metric={this.state.metric}/>
+                  </Link>
+              )
             })
           }
         </CardColumns>

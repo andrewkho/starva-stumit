@@ -3,36 +3,10 @@ import React, { Component } from "react";
 import Card from "react-bootstrap/Card";
 import ListGroup from "react-bootstrap/ListGroup";
 import ListGroupItem from "react-bootstrap/ListGroupItem";
+import polyUtil from 'polyline-encoded';
 
 
 class ActivityCard extends Component {
-  constructor(props) {
-    super(props);
-
-    this.handleClick = this.handleClick.bind(this);
-  }
-
-  async handleClick() {
-    console.log("activity clicked");
-    console.log(`Activity clicked ${this.props.activity.id}`);
-    // const zones = axios.post("http://localhost/api/v1/get_activity_zones", {
-    //const zones = axios.post("http://localhost/api/v1/get_activity_details", {
-    const zones = axios.post("http://localhost/api/v1/get_activity_streams", {
-      "activity_id": this.props.activity.id,
-      "streamtypes": [
-        'velocity_smooth',
-        'grade_smooth',
-        'distance',
-        'heartrate',
-        'time',
-      ],
-    }).then(resp => {
-      console.log(JSON.stringify(resp.data))
-    }).catch(err => {
-      console.error(err)
-    })
-  }
-
   round_to(x, digits) {
     const a = Math.pow(10, digits);
     return (Math.round(x * a) / a).toFixed(digits)
@@ -88,10 +62,49 @@ class ActivityCard extends Component {
     }
   }
 
+  load_map() {
+    // const center = [55.609818, 13.003286];
+    const script = document.createElement('script');
+    script.src = process.env.PUBLIC_URL + '/tomtom-sdk/tomtom.min.js';
+    document.body.appendChild(script);
+    script.async = true;
+    console.log('add polyline to map');
+    const latlngs = polyUtil.decode(this.props.activity.map.summary_polyline);
+    const map_id = "map_" + this.props.activity.id;
+    script.onload = function () {
+      let map = window.tomtom.L.map(map_id, {
+        source: 'vector',
+        key: '9p8KAUamPjZiFTObd29KDLojlhDr4qgr',
+        center: [37.769167, -122.478468],
+        basePath: '/tomtom-sdk',
+        zoom: 15,
+        zoomControl: false,
+        width: '100vw',
+        height: '100vh',
+      });
+
+      const pl = window.tomtom.L.polyline(latlngs);
+      pl.addTo(map);
+      map.fitBounds(pl.getBounds());
+    }
+  }
+
+  componentDidMount() {
+    this.load_map();
+  }
+
   render() {
     return(
       <Card style={{ width: '18rem' }}>
-        <Card.Img variant="top" src="holder.js/100px180" />
+        {/*<Card.Img variant="top">*/}
+        {/*</Card.Img>*/}
+        {/*<Card.Body>*/}
+        {/*  /!*<div id="map" ></div>*!/*/}
+        {/*  {this.getMap()}*/}
+        {/*</Card.Body>*/}
+        <Card.Body>
+          <div id={"map_" + this.props.activity.id} style={{height: '15rem', width: '15rem'}}>.</div>
+        </Card.Body>
         <Card.Body>
           <Card.Title>{this.props.activity.name}</Card.Title>
           <Card.Subtitle className="mb-2 text-muted">

@@ -86,7 +86,7 @@ async def get_activity_zones(request, user: user.User):
 @app.route("api/v1/get_activity_details", methods=['POST'])
 @inject_user()
 @protected()
-async def get_activity_zones(request, user: user.User):
+async def get_activity_details(request, user: user.User):
     try:
         activity_id=int(request.json['activity_id'])
     except Exception as e:
