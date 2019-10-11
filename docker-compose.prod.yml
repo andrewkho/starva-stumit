@@ -20,10 +20,8 @@ services:
     container_name: backend
     expose:
       - "8000"
-    # entrypoint: "cat /run/secrets/strava_token_key_bin"
     secrets:
       - my_secret
-      - strava_token_key_bin
     environment:
       - RUN_MODE=local
 
@@ -41,5 +39,3 @@ services:
 secrets:
   my_secret:
     file: ./secrets.yml
-  strava_token_key_bin:
-    file: ./secrets_key.bin

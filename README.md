@@ -56,3 +56,30 @@ primary_key: user_name
 Right now we're authing through personal account. For local developoment,
 creds are stored in `secrets.yml` under the keys `aws_access_key` and 
 `aws_secret_access_key`
+
+
+# EC2 container setup
+Spin up container through UI
+```
+ssh -i ~/.ssh/<keyfile>.pem ec2-user@<public dns>
+
+# In remote machine
+sudo su -
+amazon-linux-extras install docker
+yum install -y git docker 
+service docker start
+usermod -a -G docker ec2-user
+chkconfig docker on
+reboot
+
+# install docker-compose
+curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+docker-compose version
+```
+
+# Git clone and build
+```
+
+
+```

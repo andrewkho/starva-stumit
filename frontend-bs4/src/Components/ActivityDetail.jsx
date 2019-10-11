@@ -50,6 +50,12 @@ class ActivityDetail extends Component {
         'distance',
         'heartrate',
         'time',
+        'temp',
+        'moving',
+        'cadence',
+        'watts',
+        'altitude',
+        'latlng',
       ],
     }).then(resp => {
       console.log('fetched streams');
@@ -207,7 +213,7 @@ class ActivityDetail extends Component {
       },
       {
         name: velocity_name,
-        type: 'line',
+        type: 'scatter',
         x: x,
         // y: this.state.streams.velocity_smooth.data.map(u => 1 / this.convertToPace(u)),
         y: this.state.streams.velocity_smooth.data.map(this.convertToPace),
