@@ -1,0 +1,45 @@
+version: "3.6"
+services:
+
+#  nginx:
+#    image: nginx:latest
+#    container_name: production_nginx
+#    volumes:
+#      - ./nginx.prod.conf:/etc/nginx/nginx.conf
+#    #      - ./nginx/error.log:/etc/nginx/error_log.log
+#    #      - ./nginx/cache/:/etc/nginx/cache
+#    #      - /etc/letsencrypt/:/etc/letsencrypt/
+#    ports:
+#      - 80:80
+#      - 443:443
+#
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    expose:
+      - "8000"
+    # entrypoint: "cat /run/secrets/strava_token_key_bin"
+    secrets:
+      - my_secret
+      - strava_token_key_bin
+    environment:
+      - RUN_MODE=local
+
+  frontend:
+    build:
+      context: ./frontend-bs4
+      dockerfile: Dockerfile.prod
+    container_name: frontend
+    volumes:
+      - ./nginx.prod.conf:/etc/nginx/nginx.conf
+    ports:
+      - 80:80
+      - 443:443
+
+secrets:
+  my_secret:
+    file: ./secrets.yml
+  strava_token_key_bin:
+    file: ./secrets_key.bin

@@ -11,7 +11,7 @@ ENV PATH /app/node_modules/.bin:$PATH
 COPY package.json package.json
 RUN npm install -g
 RUN npm install react-scripts@3.0.1 -g
-RUN npm rebuild node-sass
+# RUN npm rebuild node-sass
 
 # start app
 CMD ["npm", "start"]
