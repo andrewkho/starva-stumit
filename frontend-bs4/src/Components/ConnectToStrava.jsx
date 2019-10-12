@@ -3,12 +3,10 @@ import { Button } from "react-bootstrap";
 import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
 
-const host = "http://localhost";
-const get_strava_auth = "/api/v1/strava_auth_url";
 
 class ConnectToStrava extends Component {
   async get_auth() {
-    const auth_url = await fetch(host + get_strava_auth,{
+    const auth_url = await fetch("/api/v1/strava_auth_url",{
         method: 'GET', // *GET, POST, PUT, DELETE, etc.
         headers: {
           'Content-Type': 'application/json'

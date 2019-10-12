@@ -10,10 +10,6 @@ import {Redirect, Link} from "react-router-dom";
 import qs from "query-string";
 
 
-const host = "http://localhost";
-const get_activities_route = "/api/v1/get_activities";
-
-
 function getSundayMidnight(monday) {
   const end = new Date(monday);
   end.setDate(monday.getDate() + 6);
@@ -74,7 +70,7 @@ class StravaActivitiesPage extends React.Component {
 
     console.log("start end " + start_seconds + " " + end_seconds);
 
-    const activities = await axios.post(host + get_activities_route, {
+    const activities = await axios.post("/api/v1/get_activities", {
       start: start_seconds,
       end: end_seconds,
     }).then((response) => {

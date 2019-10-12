@@ -4,11 +4,9 @@ import {Redirect} from "react-router-dom";
 import qs from "query-string";
 import Spinner from "react-bootstrap/Spinner";
 
-const host = "http://localhost";
-const authorize_route = "/api/auth";
 
 async function authorize(code) {
-  return await axios.post(host + authorize_route, {
+  return await axios.post( "/api/auth", {
     code: code,
   }).then(resp => {
     console.log("Submitting code success! " + JSON.stringify(resp));

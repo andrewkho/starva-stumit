@@ -27,7 +27,7 @@ class ActivityDetail extends Component {
 
   async componentDidMount() {
     console.log(`activity_id: ${this.state.activity_id}`);
-    axios.post("http://localhost/api/v1/get_activity_details", {
+    axios.post("/api/v1/get_activity_details", {
       "activity_id": this.state.activity_id,
     }).then(resp => {
       this.setState({
@@ -42,7 +42,7 @@ class ActivityDetail extends Component {
         authorized: false,
       });
     });
-    axios.post("http://localhost/api/v1/get_activity_streams", {
+    axios.post("/api/v1/get_activity_streams", {
       "activity_id": this.state.activity_id,
       "streamtypes": [
         'velocity_smooth',
@@ -69,7 +69,7 @@ class ActivityDetail extends Component {
       })
     });
 
-    axios.post("http://localhost/api/v1/get_athlete_zones"
+    axios.post("/api/v1/get_athlete_zones"
     ).then(resp => {
       console.log('fetched zones: ' + JSON.stringify(resp.data));
       this.setState({
