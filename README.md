@@ -28,6 +28,11 @@ pip install .
 cd ..
 ```
 
+## To re-download the Tom Tom js SDK
+We use version 4.47.6 in this build. Create an account to get an API key
+and get the SDK from here:
+https://developer.tomtom.com/maps-sdk-web/downloads
+
 ## Login tokens
 Login tokens stored through JWT stored in Cookies. To login, authenticate
 through Strava. To logout, delete the `localhost` cookie `letsplayfootsy-jwt`.
@@ -37,7 +42,6 @@ jwt secret is in `secrets.yml` under key `jwt_secret`
 ## How to store secrets
 
 - `server/secrets.yml` (gitignored, don't ever commit this!)
-- `server/secrets_key.bin` (gitignored, don't ever commit this!)
 ```
 strava_client_id: https://www.strava.com/settings/api
 strava_client_secret: https://www.strava.com/settings/api
@@ -59,7 +63,7 @@ creds are stored in `secrets.yml` under the keys `aws_access_key` and
 
 
 # EC2 container setup
-Spin up container through UI
+Spin up container through UI, setup Elastic IP and assign to instance.
 ```
 ssh -i ~/.ssh/<keyfile>.pem ec2-user@<public dns>
 
