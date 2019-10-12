@@ -80,6 +80,9 @@ docker-compose version
 
 # Git clone and build
 ```
-
+# ssh into machine as ec2-user
+git clone https://github.com/andrewkho/letsplayfootsy.git
+cd letsplayfootsy
+docker-compose -f docker-compose.prod.yml up --build
 
 ```
