@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import yaml
 from Crypto.Cipher import AES
 
