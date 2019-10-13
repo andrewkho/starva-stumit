@@ -50,8 +50,7 @@ db_user: admin
 db_password: 
 ```
 
-
-# DynamoDB
+## DynamoDB
 We're storing oauth2 tokens in a dynamodb instance.
 ```
 table_name: token_store
@@ -60,6 +59,8 @@ primary_key: user_name
 Right now we're authing through personal account. For local developoment,
 creds are stored in `secrets.yml` under the keys `aws_access_key` and 
 `aws_secret_access_key`
+
+
 
 
 # EC2 container setup
@@ -82,11 +83,23 @@ chmod +x /usr/local/bin/docker-compose
 docker-compose version
 ```
 
-# Git clone and build
-```
-# ssh into machine as ec2-user
-git clone https://github.com/andrewkho/letsplayfootsy.git
-cd letsplayfootsy
-docker-compose -f docker-compose.prod.yml up --build
+# Deploying to production
 
+We're using a webhook in github on master branch that will kick off
+a build of `andrewkho/starva-stumit-backend` and 
+`andrewkho/starva-stumit-frontend` in dockerhub.
+
+### Testing the prod build locally
+You can test locally with:
 ```
+docker-compose -f docker-compose.prod.yml pull
+docker-compose -f docker-compose.prod.yml up
+```
+
+## Deploying to EC2
+```
+./deploy-to-ec2.sh
+```
+
+
+

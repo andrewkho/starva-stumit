@@ -83,7 +83,7 @@ class ActivityCard extends Component {
           source: 'vector',
           key: '9p8KAUamPjZiFTObd29KDLojlhDr4qgr',
           center: centre,
-          basePath: '/tomtom-sdk',
+          basePath: process.env.PUBLIC_URL + '/tomtom-sdk',
           zoom: 15,
           zoomControl: false,
           doubleClickZoom: false,
