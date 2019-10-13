@@ -22,7 +22,7 @@ services:
     secrets:
       - my_secret
     environment:
-      - RUN_MODE=local
+      - RUN_MODE=prod
 
   frontend:
     image: andrewkho/starva-stumit-frontend

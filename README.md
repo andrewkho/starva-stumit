@@ -84,10 +84,22 @@ docker-compose version
 ```
 
 # Deploying to production
+~We're using a webhook in github on master branch that will kick off~
+~a build of `andrewkho/starva-stumit-backend` and~
+~`andrewkho/starva-stumit-frontend` in dockerhub.~
+We're storing images in dockerhub: `andrewkho/starva-stumit-backend` and
+`andrewkho/strava-stumit-frontend`.
 
-We're using a webhook in github on master branch that will kick off
-a build of `andrewkho/starva-stumit-backend` and 
-`andrewkho/starva-stumit-frontend` in dockerhub.
+### Build and push to dockerhub
+```
+cd backend
+docker build -t andrewkho/starva-stumit-backend:latest .
+docker push andrewkho/starva-stumit-backend:latest
+
+cd ../frontend
+docker build -t andrewkho/starva-stumit-frontend:latest .
+docker push andrewkho/starva-stumit-frontend:latest
+```
 
 ### Testing the prod build locally
 You can test locally with:
@@ -96,7 +108,10 @@ docker-compose -f docker-compose.prod.yml pull
 docker-compose -f docker-compose.prod.yml up
 ```
 
+
 ## Deploying to EC2
+This script copies necessary config to ec2, and then docker-compose pull
+and docker-compose up in the remote machine. REQUIRES SSH KEY!
 ```
 ./deploy-to-ec2.sh
 ```

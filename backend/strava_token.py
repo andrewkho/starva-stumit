@@ -142,6 +142,7 @@ async def _put_athlete_token_info(strava_token: StravaToken):
         'refresh_token_enc': {'S': refresh_token_enc},
         'refresh_token_nonce': {'S': refresh_token_nonce},
     })
+    logger.info("Successfully put item")
     if response.get('ResponseMetadata', {}).get('HTTPStatusCode') != 200:
         logger.error(f"Error: {str(response)}")
         raise ValueError(f"Bad status when put_athlete_token in dynamo: "
@@ -235,7 +236,9 @@ async def authenticate(request, *args, **kwargs):
         if not code:
             raise exceptions.AuthenticationFailed("no code")
 
+        logger.info("Looking up code...")
         token = await StravaToken.create_from_code(code)
+        logger.info("Registering new user...")
         user = await User.register(user_id=user_id,
                                    athlete_id=token.athlete_id)
 

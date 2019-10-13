@@ -23,7 +23,8 @@ else:
     def get_dynamo_client():
         session = aiobotocore.get_session(loop=asyncio.get_event_loop())
         return session.create_client(
-            service_name='dynamodb'
+            service_name='dynamodb',
+            region_name='us-west-1',
         )
 
 
