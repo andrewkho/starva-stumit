@@ -2,6 +2,7 @@ import datetime
 import logging
 import sys
 import urllib.parse
+import uuid
 from typing import Optional, Dict
 
 import aiohttp
@@ -226,12 +227,10 @@ async def authenticate(request, *args, **kwargs):
     we'll exchange the code for access tokens, get the athlete_id, and
     register this user.
     """
-    # return await User.get(user_id='2e87ddc2-5c57-4f7e-b50d-b30edafcb6f3')
     try:
         user_id = request.json.get('user_id', None)
         if not user_id:
-            # user_id = str(uuid.uuid4())
-            user_id = '2e87ddc2-5c57-4f7e-b50d-b30edafcb6f3'
+            user_id = str(uuid.uuid4())
         code = request.json.get('code', None)
         if not code:
             raise exceptions.AuthenticationFailed("no code")

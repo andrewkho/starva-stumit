@@ -18,4 +18,4 @@ $SCP ./docker-compose.prod.yml ./nginx.prod.conf $PROD:
 DC="docker-compose -f docker-compose.prod.yml"
 echo $DC
 
-echo "$DC down && $DC pull && $DC up -g" | $SSH $PROD
+echo "$DC down && $DC pull && $DC up -d" | $SSH $PROD
