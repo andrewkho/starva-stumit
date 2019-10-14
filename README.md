@@ -96,8 +96,8 @@ cd backend
 docker build -t andrewkho/starva-stumit-backend:latest .
 docker push andrewkho/starva-stumit-backend:latest
 
-cd ../frontend
-docker build -t andrewkho/starva-stumit-frontend:latest .
+cd ../frontend-bs4
+docker build -f Dockerfile.prod -t andrewkho/starva-stumit-frontend:latest .
 docker push andrewkho/starva-stumit-frontend:latest
 ```
 
@@ -107,7 +107,6 @@ You can test locally with:
 docker-compose -f docker-compose.prod.yml pull
 docker-compose -f docker-compose.prod.yml up
 ```
-
 
 ## Deploying to EC2
 This script copies necessary config to ec2, and then docker-compose pull
