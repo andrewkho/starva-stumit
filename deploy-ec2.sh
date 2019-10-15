@@ -2,7 +2,7 @@
 
 set -ex
 
-PROD="ec2-user@13.52.208.134"
+PROD="ec2-user@andrewho.ca"
 KEYFILE="~/.ssh/stitchfix-laptop.pem"
 
 SCP="scp -i $KEYFILE"
