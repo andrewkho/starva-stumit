@@ -15,9 +15,9 @@ Initialize(
     app,
     url_prefix='/api/auth',
     secret=secrets.jwt_secret,
-    cookie_httponly=True,
     cookie_set=True,
-    cookie_domain='localhost',
+    cookie_httponly=True,
+    cookie_domain='andrewho.ca',
     cookie_access_token_name='letsplayfootsy-jwt',
     expiration_delta=60 * 24 * 10000,  # 10000 days
     authenticate=strava_token.authenticate,

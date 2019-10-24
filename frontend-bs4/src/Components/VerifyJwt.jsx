@@ -14,8 +14,7 @@ async function verify_jwt() {
       console.log("Failed to verify JWT ");
       console.log(error);
       return false;
-    })
-  ;
+    });
 
   return verified;
 }

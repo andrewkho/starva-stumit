@@ -20,7 +20,7 @@ logger.setLevel(logging.INFO)
 
 STRAVA_OAUTH_HOST = 'https://www.strava.com/oauth'
 
-HOST = 'http://andrewho.ca'
+HOST = 'https://www.andrewho.ca'
 REDIRECT_ROUTE = '/strava/authreturn/'
 
 REQUIRED_SCOPES = [

@@ -112,7 +112,7 @@ docker-compose -f docker-compose.prod.yml up
 This script copies necessary config to ec2, and then docker-compose pull
 and docker-compose up in the remote machine. REQUIRES SSH KEY!
 ```
-./deploy-to-ec2.sh
+MACHINE_IP=xxx.xxx.xxx.xxx ./deploy-to-ec2.sh
 ```
 
 

@@ -12,15 +12,6 @@ async function authorize(code) {
     console.log("Submitting code success! " + JSON.stringify(resp));
     console.log("payload: " + resp.data.access_token);
 
-    // TODO: try and figure out how to get set-cookies header to work!
-    const cookie_name = "letsplayfootsy-jwt";
-    var now = new Date();
-    var time = now.getTime();
-    var expireTime = time + 1000*36000;
-    now.setTime(expireTime);
-
-    document.cookie = cookie_name + "=" + resp.data.access_token + ";" + now.toGMTString() + ";path=/";
-
     return resp
   }).catch((error) => {
     console.error("Error when submitting code " + error)
