@@ -110,3 +110,6 @@ secrets_key.bin
 
 # javascript
 node_modules
+
+
+certs

@@ -30,8 +30,9 @@ services:
     container_name: frontend
     volumes:
       - ./nginx.prod.conf:/etc/nginx/nginx.conf
+      - ./public.pem:/etc/ssl/public.pem
+      - ./private.pem:/etc/ssl/private.pem
     ports:
-      - 80:80
       - 443:443
 
 secrets:

@@ -116,4 +116,20 @@ MACHINE_IP=xxx.xxx.xxx.xxx ./deploy-to-ec2.sh
 ```
 
 
+## Cloudflare
+We're using Cloudflare to proxy traffic to the EC2 instance. Cloudflare 
+enforces https for all traffic, and page-rules to redirect non-www to www.
+ 
+Specifically, we use cloudflare to enforce https for all client to edge 
+traffic, and we needed to setup https for our origin server to encrypt 
+proxy -> origin traffic. Certs are Origin certs from 
+`cloudflare -> ssl/tls -> origin server -> origin certificates`. 
+These are only valid through cloudflare proxy.
+Certs are stored in encrypted s3 and copied to the server on deploy.
 
+
+## Login creds 
+All usernames are UUIDs generated whenever a client authenticates with Strava.
+The username is stored in a JWT by the browser through the `Set-Cookie` 
+directive. Clients can log out by deleting the cookie. They will be assigned
+a new username upon relogging in.
