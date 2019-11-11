@@ -9,6 +9,7 @@ import secrets
 import strava
 import strava_token
 import user
+from plot_utils.filter import lowpass
 
 app = Sanic()
 Initialize(
@@ -133,6 +134,11 @@ async def get_activity_streams(request, user: user.User):
 
     activity_streams = await strava.get_activity_streams(
         user=user, activity_id=activity_id, streamtypes=streamtypes)
+
+    # Add a new filtered stream
+    if 'velocity_smooth' in activity_streams:
+        filtered = lowpass(activity_streams['velocity_smooth']['data'])
+        activity_streams['velocity_smooth']['data_filtered'] = filtered
 
     logger.info(f"Got activity streams: {activity_streams}")
 

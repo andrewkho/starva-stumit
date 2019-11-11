@@ -4,3 +4,6 @@ sanic-jwt
 boto3
 pycryptodome
 aiobotocore
+botocore==1.12.252
+numpy
+scipy

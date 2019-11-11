@@ -203,20 +203,50 @@ class ActivityDetail extends Component {
 
     console.log(`${min_hr}, ${max_hr}, ${min_pace}, ${max_pace}`);
 
+    const heartrate_data = [];
+    const pace_data = [];
+    const pace_data_filt = [];
+    //const _pace_smooth = this.state.streams.velocity_smooth.data.map(this.convertToPace);
+    //const _pace_smooth_filt = this.state.streams.velocity_smooth.data_filtered.map(this.convertToPace);
+    const _pace_smooth = this.state.streams.velocity_smooth.data;
+    const _pace_smooth_filt = this.state.streams.velocity_smooth.data_filtered;
+    for (var i = 0; i < this.state.streams.moving.original_size; i++) {
+      if (this.state.streams.moving.data[i]) {
+        heartrate_data.push(this.state.streams.heartrate.data[i]);
+        pace_data.push(_pace_smooth[i]);
+        pace_data_filt.push(_pace_smooth_filt[i]);
+      }
+    }
+
+    const pace_ticks = [2, 3, 4, 5, 6, 7, 8];
+    function pace_to_mps(pace) {
+      return 1000 / 60 / pace;
+    }
+    const mps_ticks = pace_ticks.map(pace_to_mps);
+
     const plot_data = [
       {
         name: 'Heart Rate',
         type: 'line',
         x: x,
-        y: this.state.streams.heartrate.data,
+        //y: this.state.streams.heartrate.data,
+        y: heartrate_data,
         marker: {color: 'red'},
       },
       {
         name: velocity_name,
         type: 'scatter',
         x: x,
-        // y: this.state.streams.velocity_smooth.data.map(u => 1 / this.convertToPace(u)),
-        y: this.state.streams.velocity_smooth.data.map(this.convertToPace),
+        // y: this.state.streams.velocity_smooth.data.map(this.convertToPace),
+        y: pace_data,
+        yaxis: 'y2',
+        marker: {color: 'grey'},
+      },
+      {
+        name: velocity_name + ' filtered',
+        type: 'scatter',
+        x: x,
+        y: pace_data_filt,
         yaxis: 'y2',
         marker: {color: 'blue'},
       },
@@ -236,11 +266,13 @@ class ActivityDetail extends Component {
         title: velocity_name,
         titlefont: {color: '#ff7f0e'},
         tickfont: {color: '#ff7f0e'},
+        tickvals: mps_ticks,
+        ticktext: pace_ticks,
         anchor: 'x',
         overlaying: 'y',
         side: 'right',
         // autorange: this.state.activity.type === 'Run' ? 'reversed' : true,
-        range: [14, 0],
+        range: [pace_to_mps(11), pace_to_mps(2)],
       },
     };
 
