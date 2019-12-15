@@ -332,7 +332,7 @@ class ActivityDetail extends Component {
     if (this.state.authorized) {
       return (
         <Container fluid>
-          <div id='map' style={{height: '40vh', width: '100vw'}}>.</div>
+          <div id='map' style={{height: '40vh'}}>.</div>
           <Row>
             <Col>
               {!this.state.activity ?
