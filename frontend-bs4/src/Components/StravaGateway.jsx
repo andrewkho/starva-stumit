@@ -46,7 +46,7 @@ class StravaGateway extends React.Component {
         <div>
         {
           this.state.verified ?
-            <Redirect to="/strava" /> :
+            <Redirect to="/strava/activities" /> :
             <ConnectToStrava />
         }
         </div>

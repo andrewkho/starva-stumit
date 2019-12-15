@@ -8,6 +8,8 @@ import CardColumns from "react-bootstrap/CardColumns";
 import Spinner from "react-bootstrap/Spinner";
 import {Redirect, Link} from "react-router-dom";
 import qs from "query-string";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 
 
 function getSundayMidnight(monday) {
@@ -122,7 +124,7 @@ class StravaActivitiesPage extends React.Component {
 
     const start_secs = Math.round(start.getTime() / 1000);
     const end_secs = Math.round(end.getTime() / 1000);
-    const path = `/strava?start=${start_secs}&end=${end_secs}`;
+    const path = `/strava/activities?start=${start_secs}&end=${end_secs}`;
     console.log(path);
     return path
   }
@@ -136,7 +138,7 @@ class StravaActivitiesPage extends React.Component {
 
     const start_secs = Math.round(start.getTime() / 1000);
     const end_secs = Math.round(end.getTime() / 1000);
-    const path = `/strava?start=${start_secs}&end=${end_secs}`;
+    const path = `/strava/activities?start=${start_secs}&end=${end_secs}`;
     console.log(path);
     return path;
   }
@@ -145,18 +147,15 @@ class StravaActivitiesPage extends React.Component {
     if (this.state.authorized) {
       return (
         <Container>
-          <Navbar collapseOnSelect expand="lg" bg="light" variant="light">
-            <Navbar.Brand className="mr-auto">Activities</Navbar.Brand>
-            <Navbar.Toggle aria-controls="responsive-navbar-nav"/>
-            <Nav className="mr-auto">
-              <Nav.Item>
-                {this.state.start.toDateString()} - {this.state.end.toDateString()}
-              </Nav.Item>
-            </Nav>
-            <Nav.Item>
+          <br/>
+          <Row>
+            <Col>
+              {this.state.start.toDateString()} - {this.state.end.toDateString()}
+            </Col>
+            <Col>
               {this.state.loading ? <Spinner animation="border"/> : ""}
-            </Nav.Item>
-            <Nav.Item>
+            </Col>
+            <Col>
               <ButtonGroup>
                 <a href={this.getPrev()}>
                   <Button>Prev</Button>
@@ -165,19 +164,22 @@ class StravaActivitiesPage extends React.Component {
                   <Button>Next</Button>
                 </a>
               </ButtonGroup>
-            </Nav.Item>
-          </Navbar>
-          <CardColumns>
-            {
-              this.state.activities.map((activity) => {
-                return (
-                  <Link to={`/strava/activity?activity_id=${activity.id}&metric=${this.state.metric}`}>
-                    <ActivityCard activity={activity} metric={this.state.metric}/>
-                  </Link>
-                )
-              })
-            }
-          </CardColumns>
+            </Col>
+          </Row>
+          <br />
+          <Row>
+            <CardColumns>
+              {
+                this.state.activities.map((activity) => {
+                  return (
+                    <Link to={`/strava/activity?activity_id=${activity.id}&metric=${this.state.metric}`}>
+                      <ActivityCard activity={activity} metric={this.state.metric}/>
+                    </Link>
+                  )
+                })
+              }
+            </CardColumns>
+          </Row>
         </Container>
       )
     } else {
