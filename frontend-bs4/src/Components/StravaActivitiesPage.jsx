@@ -1,6 +1,6 @@
 import axios from "axios";
 import React from 'react';
-import {Container, Navbar, Nav} from "react-bootstrap";
+import { Container } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import ActivityCard from "./ActivityCard";
@@ -149,20 +149,12 @@ class StravaActivitiesPage extends React.Component {
         <Container>
           <br/>
           <Row>
-            <Col>
-              {this.state.start.toDateString()} - {this.state.end.toDateString()}
-            </Col>
-            <Col>
-              {this.state.loading ? <Spinner animation="border"/> : ""}
-            </Col>
+            <Col> {this.state.start.toDateString()} - {this.state.end.toDateString()} </Col>
+            <Col> {this.state.loading ? <Spinner animation="border"/> : ""} </Col>
             <Col>
               <ButtonGroup>
-                <a href={this.getPrev()}>
-                  <Button>Prev</Button>
-                </a>
-                <a href={this.getNext()}>
-                  <Button>Next</Button>
-                </a>
+                <a href={this.getPrev()}> <Button>Prev</Button> </a>
+                <a href={this.getNext()}> <Button>Next</Button> </a>
               </ButtonGroup>
             </Col>
           </Row>
