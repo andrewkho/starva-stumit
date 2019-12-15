@@ -1,15 +1,15 @@
-import axios from "axios";
 import React from 'react';
-import { Container } from "react-bootstrap";
+import {Container} from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import ActivityCard from "./ActivityCard";
 import CardColumns from "react-bootstrap/CardColumns";
 import Spinner from "react-bootstrap/Spinner";
-import {Redirect, Link} from "react-router-dom";
+import {Link, Redirect} from "react-router-dom";
 import qs from "query-string";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import {get_activities} from "../Utils/Activities";
 
 
 function getSundayMidnight(monday) {
@@ -29,10 +29,6 @@ function getMonday(d) {
   const diff = d.getDate() - day_num + (day_num === 0 ? -6 : 1); // adjust when day is sunday
   d.setDate(diff);
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-}
-
-function dateToEpochSeconds(day) {
-  return Math.round(day.getTime() / 1000);
 }
 
 class StravaActivitiesPage extends React.Component {
@@ -67,24 +63,15 @@ class StravaActivitiesPage extends React.Component {
   }
 
   async get_activities(start, end) {
-    const start_seconds = dateToEpochSeconds(start);
-    const end_seconds = dateToEpochSeconds(end);
-
-    console.log("start end " + start_seconds + " " + end_seconds);
-
-    const activities = await axios.post("/api/v1/get_activities", {
-      start: start_seconds,
-      end: end_seconds,
-    }).then((response) => {
-      return response.data;
-    }).catch((error) => {
-      console.log(error);
-      this.setState({
-        authorized: false,
+    return await get_activities(start, end)
+      .then((data) => {
+        return data;
+      }).catch((error) => {
+        console.log(error);
+        this.setState({
+          authorized: false,
+        });
       });
-    });
-
-    return activities;
   }
 
   async update_activities(start, end) {

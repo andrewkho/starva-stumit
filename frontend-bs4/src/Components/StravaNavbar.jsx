@@ -10,10 +10,10 @@ class StravaNavbarBase extends React.Component {
         <Navbar.Brand href="/strava">Starva STumit</Navbar.Brand>
           <Nav className="mr-auto" activeKey={this.props.location.pathname}>
             <Nav.Item>
-              <Nav.Link href="/strava/activities" activeClassName="active">Activities</Nav.Link>
+              <Nav.Link href="/strava/activities">Activities</Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link href="/strava/trends" activeClassName="active">Trends</Nav.Link>
+              <Nav.Link href="/strava/trends">Trends</Nav.Link>
             </Nav.Item>
           </Nav>
       </Navbar>
