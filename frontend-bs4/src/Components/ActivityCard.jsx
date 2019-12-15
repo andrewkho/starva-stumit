@@ -33,6 +33,16 @@ class ActivityCard extends Component {
     return `${hours}:${minutes}:${seconds}`;
   }
 
+  getAveragePower() {
+    console.log(this.props.activity);
+
+    if (!this.props.activity.average_watts) {
+      return `-`;
+    } else {
+      return `${this.props.activity.average_watts} W`;
+    }
+  }
+
   getAveragePace() {
     // Convert m/s to min/km for metric, min/mi for
     const mps = this.props.activity.average_speed;
@@ -128,6 +138,7 @@ class ActivityCard extends Component {
               {this.props.activity.has_heartrate ?
                 <ListGroupItem>Avg. HR {this.props.activity.average_heartrate}</ListGroupItem> :
                 ''}
+              <ListGroupItem>Avg. Power {this.getAveragePower()}</ListGroupItem>
             </ListGroup>
             {/*<ul>*/}
             {/*  <li>Distance {this.getDistance()}</li>*/}

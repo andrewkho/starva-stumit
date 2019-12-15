@@ -159,6 +159,10 @@ class ActivityDetail extends Component {
     }
   }
 
+  getAveragePower() {
+    const watts = this.state.activity.average_watts;
+  }
+
   load_map() {
     // const center = [55.609818, 13.003286];
     const script = document.createElement('script');
@@ -201,9 +205,13 @@ class ActivityDetail extends Component {
     const max_hr = Math.max(...this.state.streams.heartrate.data);
     const min_hr = Math.min(...this.state.streams.heartrate.data);
 
+    const max_x = Math.max(...x);
+    console.log(`${max_x}`);
+
     console.log(`${min_hr}, ${max_hr}, ${min_pace}, ${max_pace}`);
 
     const heartrate_data = [];
+    const power_data = [];
     const pace_data = [];
     const pace_data_filt = [];
     //const _pace_smooth = this.state.streams.velocity_smooth.data.map(this.convertToPace);
@@ -215,6 +223,7 @@ class ActivityDetail extends Component {
         heartrate_data.push(this.state.streams.heartrate.data[i]);
         pace_data.push(_pace_smooth[i]);
         pace_data_filt.push(_pace_smooth_filt[i]);
+        power_data.push(this.state.streams.watts.data[i]);
       }
     }
 
@@ -237,7 +246,6 @@ class ActivityDetail extends Component {
         name: velocity_name,
         type: 'scatter',
         x: x,
-        // y: this.state.streams.velocity_smooth.data.map(this.convertToPace),
         y: pace_data,
         hovertext: pace_data.map(function(x) {return 1000 / 60 / x;}),
         yaxis: 'y2',
@@ -252,12 +260,24 @@ class ActivityDetail extends Component {
         yaxis: 'y2',
         marker: {color: 'blue'},
       },
+      {
+        name: 'Power',
+        type: 'scatter',
+        x: x,
+        y: power_data,
+        yaxis: 'y3',
+        marker: {color: 'blue'},
+
+      },
     ];
 
     const layout = {
       title: 'Stream data',
       width: "60vw",
       height: "40vh",
+      xaxis: {
+        range: [0., max_x*1.2],
+      },
       yaxis: {
         title: 'Heart Rate',
         titlefont: {color: '#ff7f0e'},
@@ -270,11 +290,21 @@ class ActivityDetail extends Component {
         tickfont: {color: '#ff7f0e'},
         tickvals: mps_ticks,
         ticktext: pace_ticks,
-        anchor: 'x',
+        anchor: 'free',
         overlaying: 'y',
         side: 'right',
+        position: 1,
         // autorange: this.state.activity.type === 'Run' ? 'reversed' : true,
         range: [pace_to_mps(11), pace_to_mps(2)],
+      },
+      yaxis3: {
+        title: 'Power',
+        side: 'right',
+        anchor: 'free',
+        overlaying: 'y',
+        position: 0.85,
+        titlefont: {color: '#ff7f0e'},
+        tickfont: {color: '#ff7f0e'},
       },
     };
 
@@ -348,6 +378,8 @@ class ActivityDetail extends Component {
                 </div>
               }
             </Col>
+          </Row>
+          <Row>
             <Col>
               {this.state.streams && this.state.activity ? this.hr_plot() : ''}
             </Col>
