@@ -10,9 +10,9 @@ import FourOhFour from "./Components/FourOhFour";
 import StravaAuthFailed from "./Components/StravaAuthFailed";
 import StravaGateway from "./Components/StravaGateway";
 import ActivityDetail from "./Components/ActivityDetail";
-import StravaActivities from "./Components/StravaHome";
 import StravaNavbar from "./Components/StravaNavbar";
 import StravaTrends from "./Components/StravaTrends";
+import StravaActivitiesPage from "./Components/StravaActivitiesPage";
 
 class App extends React.Component {
   render() {
@@ -25,7 +25,7 @@ class App extends React.Component {
             <Switch>
               <Route exact path="/" component={StravaGateway} />
               <Route exact path="/strava" component={StravaGateway} />
-              <Route path="/strava/activities" component={StravaActivities} />
+              <Route path="/strava/activities" component={StravaActivitiesPage} />
               <Route path="/strava/trends" component={StravaTrends} />
               <Route path="/strava/activity" component={ActivityDetail} />
               <Route path="/strava/authreturn" component={StravaAuthReturn} />
