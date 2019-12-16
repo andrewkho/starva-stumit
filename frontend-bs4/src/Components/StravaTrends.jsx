@@ -82,7 +82,6 @@ class StravaTrends extends React.Component {
     const layout = {
       title: 'Aerobic Efficiency [metres per beat]',
 
-      // autosize: "initial",
       width: '1000',
       height: '800',
       xaxis: {
