@@ -25,15 +25,26 @@ async def get_activities_list(user: User, start: int, end: int) -> List[Dict]:
     headers = {
         'Authorization': f'Bearer {token.access_token}'
     }
-    params = {
-        'before': end,
-        'after': start,
-        'perPage': 100,
-    }
-    async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.get(url, params=params) as resp:
-            logger.info(f"response status: {resp.status}")
-            data = await resp.json()
+    per_page = 50
+    curr_page = 1
+    data = []
+    while True:
+        params = {
+            'before': end,
+            'after': start,
+            'per_page': per_page,
+            'page': curr_page,
+        }
+        async with aiohttp.ClientSession(headers=headers) as session:
+            async with session.get(url, params=params) as resp:
+                logger.info(f"response status: {resp.status}")
+                page_data = await resp.json()
+        data.extend(page_data)
+        if len(page_data) == per_page:
+            curr_page += 1
+            continue
+        else:
+            break
 
     return data
 
