@@ -82,8 +82,9 @@ class StravaTrends extends React.Component {
     const layout = {
       title: 'Aerobic Efficiency [metres per beat]',
 
+      // autosize: "initial",
       width: '1000',
-      //height: "60vh",
+      height: '800',
       xaxis: {
         autorange: true,
         range: [min_date, max_date],
@@ -115,7 +116,6 @@ class StravaTrends extends React.Component {
       />
     )
   }
-
 
   async get_activities(start, end) {
     return await get_activities(start, end)
