@@ -7,6 +7,7 @@ import Row from "react-bootstrap/Row";
 import Plot from 'react-plotly.js';
 import Col from "react-bootstrap/Col";
 import { Redirect } from "react-router-dom";
+import {convertToPace, convertToSpeed} from "../Utils/Activities";
 
 
 class ActivityDetail extends Component {
@@ -22,7 +23,6 @@ class ActivityDetail extends Component {
       loading: true,
       metric: query_params.metric,
     };
-    this.convertToPace = this.convertToPace.bind(this);
   }
 
   async componentDidMount() {
@@ -109,33 +109,11 @@ class ActivityDetail extends Component {
     return `${hours}:${minutes}:${seconds}`;
   }
 
-  convertToPace(mps, metric) {
-      // 1000m / km * 1 min / 60 s / m / s = min / km
-      const min_per_km = 1000 / 60 / mps;
-      let pace;
-      if (this.state.metric) {
-        pace = min_per_km;
-      } else {
-        pace = min_per_km * 1.6;
-      }
-      return pace;
-  }
-
-  convertToSpeed(mps, metric){
-    // 1 km / 1000 m * 3600 s / 1 h * m / s = km / h
-    const kph = 3600/1000 * mps;
-    if (metric) {
-      return kph;
-    } else {
-      return kph / 1.6;
-    }
-  }
-
   getAveragePace() {
     // Convert m/s to min/km for metric, min/mi for
     const mps = this.state.activity.average_speed;
     if (this.state.activity.type === 'Run') {
-      const pace = this.convertToPace(mps, this.state.metric);
+      const pace = convertToPace(mps, this.state.metric);
       let mins = Math.floor(pace);
       let seconds = Math.round((pace - mins) * 60);
       if (mins < 10) {
@@ -150,7 +128,7 @@ class ActivityDetail extends Component {
       }
       return `${mins}:${seconds} mins / ${this.state.metric ? 'km' : 'mi'}`;
     } else {
-      const speed = this.convertToSpeed(mps, this.state.metric);
+      const speed = convertToSpeed(mps, this.state.metric);
       if (this.state.metric) {
         return `${this.round_to(speed, 1)} km / h`
       } else {
@@ -160,7 +138,7 @@ class ActivityDetail extends Component {
   }
 
   getAveragePower() {
-    const watts = this.state.activity.average_watts;
+    return this.state.activity.average_watts;
   }
 
   load_map() {
@@ -200,10 +178,23 @@ class ActivityDetail extends Component {
   hr_plot() {
     const x = this.state.streams.distance.data.map(u => u/1000);
     const velocity_name = this.state.activity.type === 'Run' ? 'Pace' : 'Speed';
-    const max_pace = Math.max(...this.state.streams.velocity_smooth.data);
-    const min_pace = Math.min(...this.state.streams.velocity_smooth.data);
-    const max_hr = Math.max(...this.state.streams.heartrate.data);
-    const min_hr = Math.min(...this.state.streams.heartrate.data);
+
+    var max_pace, min_pace;
+    if (this.state.streams.velocity_smooth) {
+      max_pace = Math.max(...this.state.streams.velocity_smooth.data);
+      min_pace = Math.min(...this.state.streams.velocity_smooth.data);
+    } else {
+      max_pace = 0;
+      min_pace = 0;
+    }
+    var max_hr, min_hr;
+    if (this.state.streams.heartrate) {
+      max_hr = Math.max(...this.state.streams.heartrate.data);
+      min_hr = Math.min(...this.state.streams.heartrate.data);
+    } else {
+      max_hr = 0;
+      min_hr = 0;
+    }
 
     const max_x = Math.max(...x);
     console.log(`${max_x}`);
@@ -214,16 +205,22 @@ class ActivityDetail extends Component {
     const power_data = [];
     const pace_data = [];
     const pace_data_filt = [];
-    //const _pace_smooth = this.state.streams.velocity_smooth.data.map(this.convertToPace);
-    //const _pace_smooth_filt = this.state.streams.velocity_smooth.data_filtered.map(this.convertToPace);
     const _pace_smooth = this.state.streams.velocity_smooth.data;
     const _pace_smooth_filt = this.state.streams.velocity_smooth.data_filtered;
     for (var i = 0; i < this.state.streams.moving.original_size; i++) {
       if (this.state.streams.moving.data[i]) {
-        heartrate_data.push(this.state.streams.heartrate.data[i]);
         pace_data.push(_pace_smooth[i]);
         pace_data_filt.push(_pace_smooth_filt[i]);
-        power_data.push(this.state.streams.watts.data[i]);
+        if (this.state.streams.heartrate) {
+          heartrate_data.push(this.state.streams.heartrate.data[i]);
+        } else {
+          heartrate_data.push(0);
+        }
+        if (this.state.streams.watts) {
+          power_data.push(this.state.streams.watts.data[i]);
+        } else {
+          power_data.push(0);
+        }
       }
     }
 

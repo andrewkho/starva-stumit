@@ -1,4 +1,3 @@
-import axios from "axios";
 import React, { Component } from "react";
 import Card from "react-bootstrap/Card";
 import ListGroup from "react-bootstrap/ListGroup";
@@ -116,12 +115,6 @@ class ActivityCard extends Component {
   render() {
     return(
       <Card style={{ width: '18rem' }}>
-        {/*<Card.Img variant="top">*/}
-        {/*</Card.Img>*/}
-        {/*<Card.Body>*/}
-        {/*  /!*<div id="map" ></div>*!/*/}
-        {/*  {this.getMap()}*/}
-        {/*</Card.Body>*/}
         <Card.Body>
           <div id={"map_" + this.props.activity.id} style={{height: '15rem', width: '15rem'}}>.</div>
         </Card.Body>
@@ -140,14 +133,6 @@ class ActivityCard extends Component {
                 ''}
               <ListGroupItem>Avg. Power {this.getAveragePower()}</ListGroupItem>
             </ListGroup>
-            {/*<ul>*/}
-            {/*  <li>Distance {this.getDistance()}</li>*/}
-            {/*  <li>Moving Time {this.getMovingTime()}</li>*/}
-            {/*  <li>Avg. Pace {this.getAveragePace()}</li>*/}
-            {/*  {this.props.activity.has_heartrate ?*/}
-            {/*    <li>Avg. HR {this.props.activity.average_heartrate}</li> :*/}
-            {/*    ''}*/}
-            {/*</ul>*/}
           </Card.Text>
         </Card.Body>
       </Card>
