@@ -90,7 +90,15 @@ docker-compose version
 We're storing images in dockerhub: `andrewkho/starva-stumit-backend` and
 `andrewkho/strava-stumit-frontend`.
 
-### Build and push to dockerhub
+# Pre-deploy script
+You can run this script from the project root which will build and push 
+to dockerhub.
+```bash
+./pre-deploy.sh
+```
+
+### Build and push to dockerhub manually
+Or run these commands to do it manually
 ```
 cd backend
 docker build -t andrewkho/starva-stumit-backend:latest .
