@@ -27,14 +27,14 @@ class StravaTrends extends React.Component {
   hr_pace_plot() {
     console.log(`Plotting trends for ${this.state.activities.length} activities...`);
 
-    const avg_hr = [];
-    const avg_pace = [];
-    const dist = [];
-    const time = [];
-    const date = [];
-    const elevation = [];
-    const pace_per_hr = [];
-    const activity_names = [];
+    const avg_hr = {};
+    const avg_pace = {};
+    const dist = {};
+    const time = {};
+    const date = {};
+    const elevation = {};
+    const pace_per_hr = {};
+    const activity_names = {};
 
     const date_list = this.state.activities.map((a) => a.start_date_local);
     const max_date = Math.max(...date_list);
@@ -46,38 +46,60 @@ class StravaTrends extends React.Component {
         continue;
       }
 
-      date.push(a.start_date_local);
+      if (!(a.workout_type in date)) {
+        date[a.workout_type] = [];
+        avg_hr[a.workout_type] = [];
+        avg_pace[a.workout_type] = [];
+        elevation[a.workout_type] = [];
+        dist[a.workout_type] = [];
+        time[a.workout_type] = [];
+        activity_names[a.workout_type] = [];
+        pace_per_hr[a.workout_type] = [];
+      }
+      date[a.workout_type].push(a.start_date_local);
 
-      avg_hr.push(a.average_heartrate);
-      avg_pace.push(convertToPace(a.average_speed, true));
-      elevation.push(a.total_elevation_gain);
-      dist.push(a.distance / 1000);
-      time.push(a.moving_time);
-      activity_names.push(a.name);
+      avg_hr[a.workout_type].push(a.average_heartrate);
+      avg_pace[a.workout_type].push(convertToPace(a.average_speed, true));
+      elevation[a.workout_type].push(a.total_elevation_gain);
+      dist[a.workout_type].push(a.distance / 1000);
+      time[a.workout_type].push(a.moving_time);
+      activity_names[a.workout_type].push(a.name);
 
-      pace_per_hr.push(
+      pace_per_hr[a.workout_type].push(
         47 * a.average_speed / a.average_heartrate
-      )
+      );
 
     }
 
-    var trace1 = {
-      type: 'scatter',
-      x: date,
-      y: pace_per_hr,
-      hovertext: activity_names,
-      mode: 'markers',
-      name: 'Aerobic Efficiency [metres per beat]',
-      marker: {
-        color: 'rgba(156, 165, 196, 0.95)',
-        line: {
-          color: 'rgba(156, 165, 196, 1.0)',
-          width: 1,
-        },
-        symbol: 'circle',
-        size: dist,
-      },
+    const workout_types = {
+      0: 'Default Run',
+      1: 'Race',
+      2: 'Long Run',
+      3: 'Workout',
     };
+
+    const workout_colours = {
+      0: 'rgba(156, 165, 255, 1.0)',
+      1: 'rgba(0, 0, 0, 1.0)',
+      2: 'rgba(255, 165, 156, 1.0)',
+      3: 'rgba(165, 255, 156, 1.0)',
+    };
+
+    const data = Object.keys(workout_types).map((i) => {
+      return {
+        type: 'scatter',
+        x: date[i],
+        y: pace_per_hr[i],
+        hovertext: activity_names[i],
+        mode: 'markers',
+        name: workout_types[i],
+        marker: {
+          color: workout_colours[i],
+          symbol: 'circle',
+          size: dist[i],
+        },
+      };
+    });
 
     const layout = {
       title: 'Aerobic Efficiency [metres per beat]',
@@ -110,7 +132,7 @@ class StravaTrends extends React.Component {
 
     return (
       <Plot
-        data={[trace1]}
+        data={data}
         layout={layout}
       />
     )
