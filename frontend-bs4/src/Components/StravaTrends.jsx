@@ -34,6 +34,7 @@ class StravaTrends extends React.Component {
     const date = {};
     const elevation = {};
     const pace_per_hr = {};
+    const pace_per_hr_adj = {};
     const activity_names = {};
 
     const date_list = this.state.activities.map((a) => a.start_date_local);
@@ -55,6 +56,7 @@ class StravaTrends extends React.Component {
         time[a.workout_type] = [];
         activity_names[a.workout_type] = [];
         pace_per_hr[a.workout_type] = [];
+        pace_per_hr_adj[a.workout_type] = [];
       }
       date[a.workout_type].push(a.start_date_local);
 
@@ -67,6 +69,10 @@ class StravaTrends extends React.Component {
 
       pace_per_hr[a.workout_type].push(
         47 * a.average_speed / a.average_heartrate
+      );
+
+      pace_per_hr_adj[a.workout_type].push(
+        47 * (a.distance + a.total_elevation_gain * 10) / (a.moving_time) / a.average_heartrate
       );
 
     }
@@ -86,10 +92,13 @@ class StravaTrends extends React.Component {
     };
 
     const data = Object.keys(workout_types).map((i) => {
+      if (!(i in date)) {
+        return {};
+      }
       return {
         type: 'scatter',
         x: date[i],
-        y: pace_per_hr[i],
+        y: pace_per_hr_adj[i],
         hovertext: activity_names[i],
         mode: 'markers',
         name: workout_types[i],
@@ -102,7 +111,7 @@ class StravaTrends extends React.Component {
     });
 
     const layout = {
-      title: 'Aerobic Efficiency [metres per beat]',
+      title: 'Aerobic Efficiency [metres per beat] (adj. for total elevation)',
 
       width: '1000',
       height: '800',
