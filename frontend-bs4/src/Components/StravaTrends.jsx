@@ -47,6 +47,10 @@ class StravaTrends extends React.Component {
         continue;
       }
 
+      if (a.workout_type === null) {
+        a.workout_type = 0;
+      }
+
       if (!(a.workout_type in date)) {
         date[a.workout_type] = [];
         avg_hr[a.workout_type] = [];
