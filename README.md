@@ -42,12 +42,15 @@ jwt secret is in `secrets.yml` under key `jwt_secret`
 ## How to store secrets
 
 - `server/secrets.yml` (gitignored, don't ever commit this!)
+- For local development
+  - You'll need to generate your own `strava_client_{id,secret}`. 
+  - Generate any UUID (no dashes) to use as the `jwt_secret` and `strava_token_key`
 ```
 strava_client_id: https://www.strava.com/settings/api
 strava_client_secret: https://www.strava.com/settings/api
 
-db_user: admin
-db_password: 
+jwt_secret: <Generate your own UUID>
+strava_token_key: <Generate your own UUID>
 ```
 
 ## DynamoDB
@@ -59,8 +62,6 @@ primary_key: user_name
 Right now we're authing through personal account. For local developoment,
 creds are stored in `secrets.yml` under the keys `aws_access_key` and 
 `aws_secret_access_key`
-
-
 
 
 # EC2 container setup
