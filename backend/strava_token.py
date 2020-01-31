@@ -12,6 +12,7 @@ import db_utils.refresh_tokens
 import db_utils.user
 import secrets
 from db_utils import dynamodb
+from run_mode import RUN_MODE
 from user import User
 
 logger = logging.getLogger(__name__)
@@ -20,7 +21,11 @@ logger.setLevel(logging.INFO)
 
 STRAVA_OAUTH_HOST = 'https://www.strava.com/oauth'
 
-HOST = 'https://www.andrewho.ca'
+if RUN_MODE == 'local':
+    HOST = 'http://localhost'
+else:
+    HOST = 'https://www.andrewho.ca'
+
 REDIRECT_ROUTE = '/strava/authreturn/'
 
 REQUIRED_SCOPES = [

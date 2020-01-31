@@ -3,8 +3,6 @@ from typing import Tuple
 import yaml
 from Crypto.Cipher import AES
 
-from run_mode import RUN_MODE
-
 SECRETS_FILE = '/run/secrets/my_secret'
 
 with open(SECRETS_FILE, 'r') as f:
@@ -12,10 +10,6 @@ with open(SECRETS_FILE, 'r') as f:
 
 strava_client_id = SECRETS['strava_client_id']
 strava_client_secret = SECRETS['strava_client_secret']
-
-if RUN_MODE == 'local':
-    aws_access_key = SECRETS['aws_access_key']
-    aws_secret_access_key = SECRETS['aws_secret_access_key']
 
 strava_token_key = bytes.fromhex(SECRETS['strava_token_key'])
 

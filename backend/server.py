@@ -10,6 +10,12 @@ import strava
 import strava_token
 import user
 from plot_utils.filter import lowpass
+from run_mode import RUN_MODE
+
+if RUN_MODE == 'local':
+    DOMAIN = 'localhost'
+else:
+    DOMAIN = 'andrewho.ca'
 
 app = Sanic()
 Initialize(
@@ -18,7 +24,7 @@ Initialize(
     secret=secrets.jwt_secret,
     cookie_set=True,
     cookie_httponly=True,
-    cookie_domain='andrewho.ca',
+    cookie_domain=DOMAIN,
     cookie_access_token_name='letsplayfootsy-jwt',
     expiration_delta=60 * 24 * 10000,  # 10000 days
     authenticate=strava_token.authenticate,

@@ -1,5 +1,12 @@
 version: "3.6"
 services:
+  dynamodb:
+    image: amazon/dynamodb-local:latest
+    container_name: dynamodb
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
+    ports:
+      - 9999:8000
+
   nginx:
     image: nginx:latest
     container_name: production_nginx
@@ -17,11 +24,13 @@ services:
     container_name: backend
     expose:
       - "8000"
-    # entrypoint: "cat /run/secrets/strava_token_key_bin"
     secrets:
       - my_secret
     environment:
       - RUN_MODE=local
+      - AWS_ACCESS_KEY_ID=dummy
+      - AWS_SECRET_ACCESS_KEY=dummy
+      - AWS_REGION=us-west-1
 
   frontend:
     build: ./frontend-bs4

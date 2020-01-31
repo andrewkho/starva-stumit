@@ -15,9 +15,10 @@ if RUN_MODE == 'local':
         session = aiobotocore.get_session(loop=asyncio.get_event_loop())
         return session.create_client(
             service_name='dynamodb',
-            aws_access_key_id=secrets.aws_access_key,
-            aws_secret_access_key=secrets.aws_secret_access_key,
+            aws_access_key_id='dummy',
+            aws_secret_access_key='dummy',
             region_name='us-west-1',
+            endpoint_url='http://dynamodb:8000',
         )
 else:
     def get_dynamo_client():
