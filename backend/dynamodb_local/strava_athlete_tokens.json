@@ -1,0 +1,19 @@
+{
+    "AttributeDefinitions": [
+        {
+            "AttributeName": "athlete_id",
+            "AttributeType": "S"
+        }
+    ],
+    "TableName": "strava_athlete_tokens",
+    "KeySchema": [
+        {
+            "AttributeName": "athlete_id",
+            "KeyType": "HASH"
+        }
+    ],
+    "ProvisionedThroughput": {
+        "ReadCapacityUnits": 100,
+        "WriteCapacityUnits": 100
+    }
+}

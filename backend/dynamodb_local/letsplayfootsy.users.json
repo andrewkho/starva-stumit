@@ -1,0 +1,19 @@
+{
+    "AttributeDefinitions": [
+        {
+            "AttributeName": "user_id",
+            "AttributeType": "S"
+        }
+    ],
+    "TableName": "letsplayfootsy.users",
+    "KeySchema": [
+        {
+            "AttributeName": "user_id",
+            "KeyType": "HASH"
+        }
+    ],
+    "ProvisionedThroughput": {
+        "ReadCapacityUnits": 100,
+        "WriteCapacityUnits": 100
+    }
+}
