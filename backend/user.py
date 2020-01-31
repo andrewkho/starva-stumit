@@ -42,7 +42,12 @@ class User(object):
 async def retrieve_user(request, payload, *args, **kwargs):
     if payload:
         user_id = payload.get('user_id', None)
-        user = await User.get(user_id=user_id)
-        return user
+        try:
+            user = await User.get(user_id=user_id)
+            return user
+        except Exception as e:
+            print(f"Error trying to retrieve user: {user_id}")
+            print(f"Exception: {e}")
+            return None
     else:
         return None
