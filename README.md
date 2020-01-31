@@ -8,6 +8,8 @@ DynamoDB is in the back end to store some encrypted tokens and map user_ids
 EC2 with an encrypted S3 bucket for secrets.
 
 ## How to dev locally
+First create your `secrets.yml` file (see "How to store secrets" below)
+Then: 
 ```bash
 docker-compose -f docker-compose.dev.yml up --build
 ```
