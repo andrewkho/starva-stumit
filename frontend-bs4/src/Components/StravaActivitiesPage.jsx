@@ -49,13 +49,14 @@ class StravaActivitiesPage extends React.Component {
       end.setUTCSeconds(query_params.end);
     }
 
+    console.log("this.props.metric " + this.props.metric);
+
     this.state = {
       authorized: true,
       activities: [],
       start: start,
       end: end,
       loading: false,
-      metric: true,
     };
     this.getPrev = this.getPrev.bind(this);
     this.getNext = this.getNext.bind(this);
@@ -151,8 +152,8 @@ class StravaActivitiesPage extends React.Component {
               {
                 this.state.activities.map((activity) => {
                   return (
-                    <Link to={`/strava/activity?activity_id=${activity.id}&metric=${this.state.metric}`}>
-                      <ActivityCard activity={activity} metric={this.state.metric}/>
+                    <Link to={`/strava/activity?activity_id=${activity.id}`}>
+                      <ActivityCard activity={activity} metric={this.props.metric}/>
                     </Link>
                   )
                 })

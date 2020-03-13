@@ -15,19 +15,34 @@ import StravaTrends from "./Components/StravaTrends";
 import StravaActivitiesPage from "./Components/StravaActivitiesPage";
 
 class App extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      metric: false,
+    };
+  }
+
   render() {
     return (
       <Router>
         <div className="App">
           <Container>
-            <StravaNavbar />
-
+            <StravaNavbar onUnitsChange={(units) => {
+              console.log("Units changed to " + units);
+              this.setState({
+                metric: units !== "imperial",
+              });
+            }}/>
             <Switch>
               <Route exact path="/" component={StravaGateway} />
               <Route exact path="/strava" component={StravaGateway} />
-              <Route path="/strava/activities" component={StravaActivitiesPage} />
-              <Route path="/strava/trends" component={StravaTrends} />
-              <Route path="/strava/activity" component={ActivityDetail} />
+              <Route path="/strava/activities"
+                     render={(props) => <StravaActivitiesPage {...props} metric={this.state.metric}/>} />
+              <Route path="/strava/trends"
+                     render={(props) => <StravaTrends {...props} />} />
+              <Route path="/strava/activity"
+                     render={(props) => <ActivityDetail {...props} metric={this.state.metric} />} />
               <Route path="/strava/authreturn" component={StravaAuthReturn} />
               <Route path="/strava/authfailed" component={StravaAuthFailed} />
               <Route component={FourOhFour} />

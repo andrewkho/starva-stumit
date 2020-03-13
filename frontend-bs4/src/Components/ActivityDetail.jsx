@@ -21,7 +21,6 @@ class ActivityDetail extends Component {
       streams: null,
       zones: null,
       loading: true,
-      metric: query_params.metric,
     };
   }
 
@@ -89,7 +88,7 @@ class ActivityDetail extends Component {
   }
 
   getDistance() {
-    if (this.state.metric) {
+    if (this.props.metric) {
       return `${this.round_to(this.state.activity.distance/1000, 2)} km`
     } else {
       return `${this.round_to(this.state.activity.distance/1600, 2)} mi`
@@ -113,7 +112,7 @@ class ActivityDetail extends Component {
     // Convert m/s to min/km for metric, min/mi for
     const mps = this.state.activity.average_speed;
     if (this.state.activity.type === 'Run') {
-      const pace = convertToPace(mps, this.state.metric);
+      const pace = convertToPace(mps, this.props.metric);
       let mins = Math.floor(pace);
       let seconds = Math.round((pace - mins) * 60);
       if (mins < 10) {
@@ -126,10 +125,10 @@ class ActivityDetail extends Component {
       } else {
         seconds = `${seconds}`
       }
-      return `${mins}:${seconds} mins / ${this.state.metric ? 'km' : 'mi'}`;
+      return `${mins}:${seconds} mins / ${this.props.metric ? 'km' : 'mi'}`;
     } else {
-      const speed = convertToSpeed(mps, this.state.metric);
-      if (this.state.metric) {
+      const speed = convertToSpeed(mps, this.props.metric);
+      if (this.props.metric) {
         return `${this.round_to(speed, 1)} km / h`
       } else {
         return `${this.round_to(speed, 1)} mi / h`
@@ -224,11 +223,13 @@ class ActivityDetail extends Component {
       }
     }
 
-    const pace_ticks = [2, 3, 4, 5, 6, 7, 8];
-    function pace_to_mps(pace) {
-      return 1000 / 60 / pace;
+    let pace_ticks;
+    if (this.props.metric) {
+      pace_ticks = [2, 3, 4, 5, 6, 7, 8];
+    } else {
+      pace_ticks = [3, 4, 5, 6, 7, 8, 9, 10, 12, 14];
     }
-    const mps_ticks = pace_ticks.map(pace_to_mps);
+    const mps_ticks = pace_ticks.map((pace) => {return convertToPace(pace, this.props.metric)});
 
     const plot_data = [
       {
@@ -244,7 +245,7 @@ class ActivityDetail extends Component {
         type: 'scatter',
         x: x,
         y: pace_data,
-        hovertext: pace_data.map(function(x) {return 1000 / 60 / x;}),
+        hovertext: pace_data.map((x) => {return convertToPace(x, this.props.metric)}),
         yaxis: 'y2',
         marker: {color: 'grey'},
       },
@@ -253,7 +254,7 @@ class ActivityDetail extends Component {
         type: 'scatter',
         x: x,
         y: pace_data_filt,
-        hovertext: pace_data_filt.map(function(x) {return 1000 / 60 / x;}),
+        hovertext: pace_data_filt.map((x) => {return convertToPace(x, this.props.metric)}),
         yaxis: 'y2',
         marker: {color: 'blue'},
       },
@@ -263,7 +264,7 @@ class ActivityDetail extends Component {
         x: x,
         y: power_data,
         yaxis: 'y3',
-        marker: {color: 'blue'},
+        marker: {color: 'green'},
 
       },
     ];
@@ -292,7 +293,7 @@ class ActivityDetail extends Component {
         side: 'right',
         position: 1,
         // autorange: this.state.activity.type === 'Run' ? 'reversed' : true,
-        range: [pace_to_mps(11), pace_to_mps(2)],
+        range: [ -1, 18 ],
       },
       yaxis3: {
         title: 'Power',
@@ -302,6 +303,7 @@ class ActivityDetail extends Component {
         position: 0.85,
         titlefont: {color: '#ff7f0e'},
         tickfont: {color: '#ff7f0e'},
+        range: [ 0, 500 ],
       },
     };
 
