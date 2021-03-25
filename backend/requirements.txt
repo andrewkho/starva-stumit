@@ -1,4 +1,4 @@
-pyyaml==5.1.2
+pyyaml==5.4
 sanic==19.6.3
 sanic-jwt==1.3.2
 pycryptodome==3.9.0
